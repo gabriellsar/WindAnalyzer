@@ -1,0 +1,134 @@
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&display=swap");
+
+body {
+ font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+.map-container {
+  position: relative;
+  height: 80vh;
+  min-height: 500px;
+  margin: 30px;
+  border-radius: 20px;
+  overflow: hidden;
+  border: 2px dashed #16a34a;
+}
+
+.input-col {
+  position: absolute;
+  z-index: 1000;
+  width: 20%;
+  min-width: 320px;
+  height: 100%;
+  display: flex;
+  flex-direction: column; 
+  background: white;
+  border-radius: 20px 0 0 20px;
+  padding: 20px;
+  transition: all 0.3s ease;
+  overflow-y: hidden;
+}
+
+.input-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 12px; 
+}
+
+.input-col h4 {
+  color: #059669;
+  font-size: 1.1rem;
+  font-weight: 700;
+  margin-bottom: 5px;
+  letter-spacing: -0.3px;
+}
+
+.input-col .form-group {
+  margin-bottom: 0;
+}
+
+.input-col label, .input-col .control-label {
+  color: #374151;
+  font-weight: 600;
+  font-size: 0.85rem;
+  margin-bottom: 5px;
+}
+
+.latlon-group {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+}
+
+.latlon-item {
+  flex: 1;
+  min-width: 0;
+}
+
+.action-button-wrapper {
+  margin-top: auto; 
+}
+
+.action-button-wrapper .btn {
+  width: 100%;
+  border-radius: 20px;
+  border-color: transparent;
+  background: #059669;
+  
+}
+
+.map-col {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 100;
+}
+
+.leaflet-container {
+  height: 100% !important;
+  width: 100%;
+  border-radius: 0 !important;
+}
+
+.info-overlay {
+  position: absolute;
+  bottom: 20px;
+  right: 20px;
+  z-index: 1000;
+  width: 350px;
+}
+
+.info-box {
+  background: #ffffff; 
+  border-radius: 24px;
+  padding: 20px 20px 15px 20px;;
+  position: relative;
+  overflow: hidden;
+  border: 1px solid #e2e8f0; 
+  min-height: 300px;
+  display: flex;
+  flex-direction: column;
+}
+
+.info-box p {
+  margin: 6px 0;
+  color: #374151;
+  line-height: 1.4;
+}
+
+.info-box strong {
+  color: #059669;
+  font-weight: 600;
+}
+
+.info-section-title {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #059669;
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}

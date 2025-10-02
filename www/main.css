@@ -1,0 +1,330 @@
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&display=swap");
+
+html {
+            font-size: 16px;
+        }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: #fff; 
+            color: #343a40;      
+            line-height: 1.6;
+            min-height: 100vh;
+            overflow-x: hidden;
+            position: relative;
+            
+            /* Hide scrollbar */
+            -ms-overflow-style: none;  /* IE and Edge */
+            scrollbar-width: none;  /* Firefox */
+
+        }
+        
+        /* Hide scrollbar for Chrome, Safari and Opera */
+        ::-webkit-scrollbar {
+          display: none;
+        }
+        
+        ::-webkit-scrollbar-button {
+          display: none;
+        }
+        
+        .container-fluid {
+          padding: 0px;
+        }
+
+        .wind-particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+        }
+        .particle {
+            position: absolute;
+            width: 2px;
+            height: 20px;
+            background: linear-gradient(to bottom, transparent, rgba(34, 197, 94, 0.5), transparent);
+            animation: windFlow 8s linear infinite;
+        }
+        @keyframes windFlow {
+            0% { transform: translateX(-10px) translateY(100vh); opacity: 0; }
+            10% { opacity: 1; }
+            90% { opacity: 1; }
+            100% { transform: translateX(100px) translateY(-20px); opacity: 0; }
+        }
+
+        .turbine-silhouettes {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 300px;
+            z-index: 2;
+            pointer-events: none;
+        }
+        .turbine { position: absolute; bottom: 0; }
+        .turbine-1 { left: 5%; transform: scale(0.8); opacity: 0.1; }
+        .turbine-2 { left: 25%; transform: scale(1.2); opacity: 0.08; }
+        .turbine-3 { right: 30%; transform: scale(0.9); opacity: 0.09; }
+        .turbine-4 { right: 5%; transform: scale(1.1); opacity: 0.07; }
+
+        .turbine-tower {
+            width: 8px;
+            height: 200px;
+            background: linear-gradient(to top, rgba(0,0,0,0.1), rgba(0,0,0,0.03));
+            margin: 0 auto;
+        }
+        .turbine-blades {
+            position: relative;
+            top: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 120px;
+            height: 120px;
+            animation: rotateTurbine 4s linear infinite;
+        }
+        .blade {
+            position: absolute;
+            width: 60px;
+            height: 4px;
+            background: linear-gradient(to right, rgba(0,0,0,0.15), rgba(0,0,0,0.05));
+            border-radius: 2px;
+            top: 50%;
+            left: 50%;
+            transform-origin: 0 50%;
+        }
+        .blade:nth-child(1) { transform: translate(-50%, -50%) rotate(0deg); }
+        .blade:nth-child(2) { transform: translate(-50%, -50%) rotate(120deg); }
+        .blade:nth-child(3) { transform: translate(-50%, -50%) rotate(240deg); }
+        @keyframes rotateTurbine {
+            from { transform: translateX(-50%) rotate(0deg); }
+            to { transform: translateX(-50%) rotate(360deg); }
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+            position: relative;
+            z-index: 10;
+        }
+
+        .navbar {
+            position: sticky;
+            top: 20px;
+            z-index: 100;
+            width: 100%;
+            margin: 0 auto 20px auto;
+            background: transparent;
+            padding: 12px 30px;
+        }
+        .nav-items {
+            display: flex;
+            align-items: center;
+            justify-content: space-between; 
+            width: 100%;
+        }
+        .nav-links {
+            display: flex;
+            align-items: center;
+            justify-content: space-evenly;
+            gap: 40px;
+        }
+        .nav-logo {
+            display: block; 
+        }
+        .nav-item {
+            color: #495057;
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 16px;
+            padding: 8px 16px;
+            border-radius: 12px;
+            transition: all 0.3s ease;
+            position: relative;
+            background-color: transparent;
+            border: none;
+        }
+        .nav-item.highlight {
+            font-weight: 700;
+            font-size: 18px;
+            color: #16a34a; 
+            background: rgba(34, 197, 94, 0.1); 
+        }
+        .nav-item:hover {
+            background: rgba(34, 197, 94, 0.15);
+            color: #16a34a;
+            transform: translateY(-2px);
+        }
+
+        .hero {
+            text-align: center;
+            padding: 50px 0 50px;
+            position: relative;
+            overflow: hidden;
+        }
+        .wind-indicator {
+            position: absolute;
+            top: 50px;
+            right: 50px;
+            background: #ffffff;
+            border-radius: 15px;
+            padding: 15px 20px;
+            border: 1px solid #dee2e6;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        }
+        .wind-speed-animation { width: 30px; height: 20px; position: relative; }
+        .wind-line { position: absolute; height: 2px; background: rgba(34, 197, 94, 0.8); border-radius: 1px; animation: windSpeed 2s ease-in-out infinite; }
+        .wind-line:nth-child(1) { top: 3px; width: 20px; animation-delay: 0s; }
+        .wind-line:nth-child(2) { top: 9px; width: 25px; animation-delay: 0.3s; }
+        .wind-line:nth-child(3) { top: 15px; width: 15px; animation-delay: 0.6s; }
+        @keyframes windSpeed {
+            0%, 100% { opacity: 0.3; transform: translateX(0); }
+            50% { opacity: 1; transform: translateX(8px); }
+        }
+        .hero h1 {
+            font-size: 4.5rem;
+            font-weight: 900;
+            color: #059669; 
+            margin-bottom: 24px;
+            letter-spacing: -2px;
+            position: relative;
+        }
+        .hero h1::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100px;
+            height: 3px;
+            background: linear-gradient(90deg, transparent, #22c55e, transparent);
+            border-radius: 2px;
+        }
+        .hero p {
+            font-size: 1.4rem;
+            color: #6c757d;
+            margin-bottom: 50px;
+            max-width: 650px;
+            margin-left: auto;
+            margin-right: auto;
+            font-weight: 400;
+        }
+        .cta-button {
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+            background: linear-gradient(135deg, #16a34a, #059669, #047857);
+            color: white;
+            padding: 20px 40px;
+            border: none;
+            border-radius: 25px;
+            font-size: 1.2rem;
+            font-weight: 700;
+            text-decoration: none;
+            box-shadow: 0 15px 35px rgba(22, 163, 74, 0.4), 0 0 20px rgba(34, 197, 94, 0.2);
+            transition: all 0.4s ease;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+        .cta-button:hover {
+            color: white;
+            transform: translateY(-5px) scale(1.05);
+            box-shadow: 0 20px 40px rgba(22, 163, 74, 0.5), 0 0 30px rgba(34, 197, 94, 0.3);
+        }
+        .cta-icon { width: 24px; height: 24px; animation: energyPulse 2s ease-in-out infinite; }
+        @keyframes energyPulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.2); filter: drop-shadow(0 0 5px #22c55e); }
+        }
+
+        .cards-section { padding: 30px 0; position: relative; }
+        .cards-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 1px;
+            background: #dee2e6;
+        }
+        .cards-grid {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(450px, 1fr));
+            gap: 40px;
+            margin-top: 10px;
+            justify-content: center;
+        }
+        .card {
+            background: #ffffff; 
+            border-radius: 24px;
+            padding: 30px 30px;
+            transition: all 0.4s ease;
+            position: relative;
+            overflow: hidden;
+            border: 1px solid #e2e8f0; 
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+            min-height: 300px;
+            display: flex;
+            flex-direction: column;
+        }
+        .card:hover {
+            transform: translateY(-12px) scale(1.02);
+            border-color: rgba(34, 197, 94, 0.6);
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.12);
+        }
+        .card-icon {
+            font-size: 40px;
+            fill: none;
+            color: #22c55e;
+            transition: all 0.3s ease;
+            filter: drop-shadow(0 0 10px rgba(34, 197, 94, 0.3));
+        }
+        .card:hover .card-icon {
+            font-size-adjust: scale(1.1);
+            color: #10b981;
+            filter: drop-shadow(0 0 20px rgba(34, 197, 94, 0.5));
+        }
+        .card h3 {
+            font-size: 1.6rem;
+            font-weight: 700;
+            color: #212529;
+            margin-bottom: 18px;
+        }
+        .card p {
+            color: #6c757d; 
+            font-size: 1rem;
+            line-height: 1.8;
+        }
+        
+        /* Regras responsivas */
+        @media (max-width: 968px) {
+            .wind-indicator { position: relative; top: 0; right: 0; margin: 0 auto 20px; display: inline-flex; }
+        }
+        @media (max-width: 768px) {
+            .navbar { max-width: 90%; padding: 10px 20px; }
+            .nav-items { gap: 20px; }
+            .nav-item { font-size: 14px; }
+            .nav-item.highlight { font-size: 16px; }
+            .hero { padding: 80px 0 100px; }
+            .hero h1 { font-size: 2.8rem; }
+            .hero p { font-size: 1.2rem; }
+            .cards-grid { grid-template-columns: 1fr; gap: 30px; }
+            .card { padding: 30px 24px; min-height: auto; }
+            .turbine { transform: scale(0.6) !important; }
+        }
+        @media (max-width: 480px) {
+            .hero h1 { font-size: 2.2rem; }
+            .cta-button { padding: 18px 32px; font-size: 1.1rem; }
+        }
