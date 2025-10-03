@@ -1,11 +1,12 @@
 library(shiny)                
-library(leaflet)
+library(leaflet) 
 library(shinyjs)
 library(feather)
+library(ggplot2)
 
-source("config_token.R")
+source("config_token.R")    
 
-tokens <- list(
+tokens <- list(   
   refresh = refresh_token,
   client_id = client_id,
   client_secret = client_secret
@@ -38,6 +39,7 @@ ui <- fluidPage(
     tags$link(rel = "stylesheet", type = "text/css", href = "main.css"), 
     tags$link(rel = "stylesheet", type = "text/css", href = "analysis.css"),
     tags$link(rel = "stylesheet", type = "text/css", href = "map_input.css"),
+    tags$link(rel = "stylesheet", type = "text/css", href = "charts.css"),
     
     tags$style(HTML("
       .nav-tabs {
@@ -55,8 +57,7 @@ ui <- fluidPage(
     tabPanel("Home", value = "home_tab", 
       heroSectionUI("hero"),
       cardsSectionUI("cards"),
-      tags$div(class = "wind-particles"),
-      tags$div(class = "energy-flow", tags$div(class = "energy-circle", tags$div(class = "energy-dot"))),
+      tags$div(class = "wind-particles"),  
     ),
     
     tabPanel("Analysis", value = "analysis_tab",         
