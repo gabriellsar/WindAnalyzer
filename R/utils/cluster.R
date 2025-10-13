@@ -67,8 +67,11 @@ clusterizacao = function(temp){
 #'         2. `definicoes_clusters`: Uma tabela tidy com os detalhes de cada cluster.
 
 clusterizar_dados <- function(dados_EM, metodologia) {
+  
+  # Cria uma coluna de ID para garantir a ordem original ao final
   dados_EM$id_original <- 1:nrow(dados_EM)
   
+  # Define as colunas de agrupamento com base na metodologia
   variaveis_agrupamento <- switch(metodologia,
                                   "Single Period" = NULL,
                                   "Monthly" = "Month",
@@ -76,31 +79,41 @@ clusterizar_dados <- function(dados_EM, metodologia) {
                                   "Monthly and Hourly" = c("Month", "Hour")
   )
   
+  # Agrupa os dados e aplica a função de clusterização a cada grupo
   resultados_agrupados <- dados_EM %>%
     { if (!is.null(variaveis_agrupamento)) dplyr::group_by(., !!!rlang::syms(variaveis_agrupamento)) else . } %>%
     tidyr::nest() %>%
     dplyr::mutate(
       resultado_cluster = purrr::map(data, clusterizacao)
     )
-
+  
+  # Preparar a tabela de definições dos clusters
   definicoes_clusters <- resultados_agrupados %>%
     tidyr::unnest_wider(resultado_cluster) %>%
     dplyr::select(-data, -CL) %>%
     tidyr::unnest(cols = c(Min_S, Max_S, value_S)) %>%
-    dplyr::group_by(!!!rlang::syms(variaveis_agrupamento)) %>%
+    { if (!is.null(variaveis_agrupamento)) dplyr::group_by(., !!!rlang::syms(variaveis_agrupamento)) else . } %>%
     dplyr::mutate(cluster = 1:n()) %>%
     dplyr::ungroup() %>%
-    dplyr::rename(min_speed = Min_S, max_speed = Max_S, centroid_speed = value_S, elbow_data = ind_cotovelo)
+    dplyr::rename(min_speed = Min_S, max_speed = Max_S, centroid_speed = value_S, elbow_data = ind_cotovelo) %>%
+    
+    # Adiciona a coluna de metodologia para uso futuro
+    dplyr::mutate(metodologia = !!metodologia, .before = 1)
   
   atribuicoes <- resultados_agrupados %>%
     dplyr::select(data, resultado_cluster) %>%
-    tidyr::unnest(data) %>%
     dplyr::mutate(
-      cluster = purrr::map2_dbl(resultado_cluster, id_original, ~ .x$CL[match(id_original, .y$id_original)])
+      atribuicoes_grupo = purrr::map2(data, resultado_cluster, ~ tibble::tibble(
+        id_original = .x$id_original,
+        cluster = .y$CL
+      ))
     ) %>%
+    dplyr::select(atribuicoes_grupo) %>%
+    tidyr::unnest(cols = c(atribuicoes_grupo)) %>%
     dplyr::arrange(id_original) %>%
     dplyr::pull(cluster)
   
+  # Retorna a lista com as duas saídas padronizadas
   return(list(
     atribuicoes = atribuicoes,
     definicoes_clusters = definicoes_clusters

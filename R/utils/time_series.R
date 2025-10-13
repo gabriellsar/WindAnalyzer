@@ -12,7 +12,7 @@
 #'
 #' @return Um dataframe combinado e estruturado, pronto para a modelagem.
 
-combinar_dados_potencia_velocidade <- function(dados_potencia_brutos, dados_velocidade_brutos, capacidade_instalada) {
+combinar_dados_potencia_velocidade <- function(dados_potencia_brutos, dados_velocidade_brutos) {
   
   colnames(dados_potencia_brutos) <- c("Data", "Hora", "Potencia")
   dados_potencia_brutos$Timestamp <- as.POSIXct(paste(dados_potencia_brutos$Data, dados_potencia_brutos$Hora, sep = " "),

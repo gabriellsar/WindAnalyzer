@@ -1,14 +1,19 @@
-library(shiny)                
+library(shiny)                 
 library(leaflet) 
 library(shinyjs)
 library(feather)
 library(ggplot2)
+library(tibble)
+library(dplyr)
+library(tidyr)
+library(purrr)
+library(plotly)
 
 source("config_token.R")    
 
 tokens <- list(   
   refresh = refresh_token,
-  client_id = client_id,
+  client_id = client_id,   
   client_secret = client_secret
 )
 
@@ -85,7 +90,7 @@ server <- function(input, output, session) {
     dados_estacoes_data = Base_Dados_Estacoes,
     tokens = tokens
   )
-  
+   
   aboutServer("about")
      
   observeEvent(nav_clicks$home(), {
