@@ -34,13 +34,44 @@ analysisUI <- function(id) {
         ),
       ),
       
-      tags$div(
-        selectInput(ns("metodologia"), "Metodologia de Clusterização:",
-                    c("Single Period", "Monthly", "Hourly", "Monthly and Hourly")),
-        
-        actionButton(ns("run_analysis"), "Aplicar Método e Plotar Gráfico", class = "btn-success")
-      ),
-      elbowPlotUI(ns("elbow_module")),
+      div(class = "analysis-container",
+          div(class = "analysis-card",
+              div(class = "method-btn-group",
+                  actionButton(ns("btn_single"), label = "Single Period", icon = icon("circle"), class = "method-btn active"),
+                  actionButton(ns("btn_monthly"), label = "Monthly", icon = icon("calendar-alt"), class = "method-btn"),
+                  actionButton(ns("btn_hourly"), label = "Hourly", icon = icon("clock"), class = "method-btn"),
+                  actionButton(ns("btn_monthly_hourly"), label = "Monthly & Hourly", icon = icon("calendar-check"), class = "method-btn")
+              ),
+              
+              div(style = "margin-top: 20px;",
+                  actionButton(ns("run_analysis"), "Aplicar Método e Plotar Gráfico", class = "btn-success", icon = icon("play"))
+              )
+          ),
+          
+          div(class = "plot-grid",
+              div(class = "analysis-card",
+                  div(class = "plot-filters",
+                      div(id = ns("month_filter_panel"), style = "display: none;",
+                          selectInput(ns("mes_selecionado"), "Selecione o Mês:",
+                                      choices = month.name, selected = month.name[1])
+                      ),
+                      div(id = ns("hour_filter_panel"), style = "display: none;",
+                          sliderInput(ns("hora_selecionada"), "Selecione a Hora:",
+                                      min = 0, max = 23, value = 0, step = 1, width = "100%")
+                      )
+                  ),
+                  hr(), # Linha separadora
+                  fluidRow(
+                    column(width = 6, elbowPlotUI(ns("elbow_module"))),
+                    column(width = 6, scatterplotUI(ns("scatterplot_module")))
+                  )
+              ),
+              
+              div(class = "analysis-card",
+                  densityPlotUI(ns("density_module"))
+              )
+          )
+      )
     )
   )
 }
@@ -72,11 +103,35 @@ analysisServer <- function(id, lonlat_data, estacoes_data, dados_estacoes_data, 
         dados_estacoes_data = dados_estacoes_data, tokens = tokens
       )
       
-      analysis_results <- eventReactive(input$run_analysis, {
+      selected_methodology <- reactiveVal("Single Period")
+      btn_ids <- c("btn_single", "btn_monthly", "btn_hourly", "btn_monthly_hourly")
+      
+      lapply(btn_ids, function(btn_id) {
+        observeEvent(input[[btn_id]], {
+          lapply(btn_ids, function(id) shinyjs::removeClass(id, "active"))
+          shinyjs::addClass(btn_id, "active")
+          
+          method_value <- switch(btn_id,
+                                 "btn_single" = "Single Period",
+                                 "btn_monthly" = "Monthly",
+                                 "btn_hourly" = "Hourly",
+                                 "btn_monthly_hourly" = "Monthly and Hourly")
+          selected_methodology(method_value)
+        })
+      })
+      
+      observe({
+        method <- selected_methodology()
+        is_monthly <- method %in% c("Monthly", "Monthly and Hourly")
+        is_hourly <- method %in% c("Hourly", "Monthly and Hourly")
         
-        req(rv_files$wind_speed_file$data,
-            rv_files$wind_power_file$data,
-            cancelOutput = TRUE) # Impede a execução se os dados não estiverem prontos
+        shinyjs::toggleElement(id = "month_filter_panel", condition = is_monthly)
+        shinyjs::toggleElement(id = "hour_filter_panel", condition = is_hourly)
+        shinyjs::toggleElement(id = "filters_hr", condition = is_monthly || is_hourly)
+      })
+      
+      analysis_results <- eventReactive(input$run_analysis, {
+        req(rv_files$wind_speed_file$data, rv_files$wind_power_file$data, cancelOutput = TRUE)
         
         showNotification("Iniciando a análise de clusterização...", type = "message")
         
@@ -85,10 +140,18 @@ analysisServer <- function(id, lonlat_data, estacoes_data, dados_estacoes_data, 
           dados_velocidade_brutos = rv_files$wind_speed_file$data
         )
         
-        resultados <- clusterizar_dados(dados_combinados, input$metodologia)
+        if (is.null(dados_combinados) || nrow(dados_combinados) == 0) {
+          showNotification("Erro: Não foi encontrada correspondência entre os dados.", type = "error", duration = 10)
+          return(NULL)
+        }
+        
+        resultados <- clusterizar_dados(dados_combinados, selected_methodology())
         showNotification("Análise concluída com sucesso!", type = "message")
         
-        return(resultados)
+        return(list(
+          dados_originais = dados_combinados,
+          resultados_cluster = resultados
+        ))
       })
       
       observeEvent(generation_trigger(), {
@@ -236,18 +299,76 @@ analysisServer <- function(id, lonlat_data, estacoes_data, dados_estacoes_data, 
         )
       })
       
-      definicoes_reativo <- reactive({
-        req(analysis_results())
-        analysis_results()$definicoes_clusters
+      definicoes_reativo_elbow <- reactive({
+        resultados_completos <- analysis_results()
+        req(resultados_completos)
+        
+        resultados_completos$resultados_cluster$definicoes_clusters
       })
       
-      # 3. Chama o servidor do nosso módulo de gráfico
+      dados_filtrados_para_plot <- reactive({
+        resultados_completos <- analysis_results()
+        metodologia <- selected_methodology()
+        req(resultados_completos)
+        
+        tabela_meses <- data.frame(
+          nome_completo = month.name,
+          nome_abreviado = c('jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez')
+        )
+        
+        dados_orig <- resultados_completos$dados_originais
+        atribuicoes <- resultados_completos$resultados_cluster$atribuicoes
+        
+        dados_orig$..original_row_index.. <- 1:nrow(dados_orig)
+        
+        dados_filtrados <- switch(metodologia,
+          "Single Period" = { dados_orig },
+          "Monthly" = {
+            req(input$mes_selecionado)
+            mes_filtrar <- tabela_meses$nome_abreviado[tabela_meses$nome_completo == input$mes_selecionado]
+            dados_orig %>% dplyr::filter(Month == mes_filtrar)
+          },
+          "Hourly" = {
+            req(input$hora_selecionada)
+            dados_orig %>% dplyr::filter(Hour == input$hora_selecionada)
+          },
+          "Monthly and Hourly" = {
+            req(input$mes_selecionado, input$hora_selecionada)
+            mes_filtrar <- tabela_meses$nome_abreviado[tabela_meses$nome_completo == input$mes_selecionado]
+            dados_orig %>% dplyr::filter(Month == mes_filtrar, Hour == input$hora_selecionada)
+          }
+        )
+        
+        validate(
+          need(nrow(dados_filtrados) > 0, "Não existem dados para o grupo selecionado.")
+        )
+        
+        indices_filtrados <- dados_filtrados$..original_row_index..
+        atribuicoes_filtradas <- atribuicoes[indices_filtrados]
+        
+        dados_filtrados$cluster <- as.factor(atribuicoes_filtradas)
+        
+        dados_filtrados$..original_row_index.. <- NULL
+        
+        return(dados_filtrados)
+      })
+      
+      scatterplotServer(
+        "scatterplot_module",
+        dados_para_plotar = dados_filtrados_para_plot 
+        )
+      
+      densityPlotServer(
+        "density_module",
+        dados_para_plotar = dados_filtrados_para_plot
+        )
+      
       elbowPlotServer(
         id = "elbow_module",
-        dados_cluster_definicoes = definicoes_reativo,
-        metodologia_selecionada = reactive(input$metodologia),
-        mes_selecionado = reactive(NULL), # Simplificado: ainda não temos input de mês
-        hora_selecionada = reactive(NULL) # Simplificado: ainda não temos input de hora
+        dados_cluster_definicoes = definicoes_reativo_elbow,
+        metodologia_selecionada = selected_methodology,
+        mes_selecionado = reactive(input$mes_selecionado),
+        hora_selecionada = reactive(input$hora_selecionada)
       )
     })
 }

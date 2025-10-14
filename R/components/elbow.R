@@ -1,10 +1,15 @@
+# Arquivo: R/components/elbow.R
+
 elbowPlotUI <- function(id) {
   ns <- NS(id)
   
-  shinycssloaders::withSpinner(
-    plotly::plotlyOutput(ns("elbowChart")),
-    type = 4,
-    color = "#286090"
+  tagList(
+    tags$h4("Gráfico do Método do Cotovelo"),
+    shinycssloaders::withSpinner(
+      plotly::plotlyOutput(ns("elbowChart")),
+      type = 4,
+      color = "#286090"
+    )
   )
 }
 
@@ -12,41 +17,45 @@ elbowPlotServer <- function(id, dados_cluster_definicoes, metodologia_selecionad
   
   moduleServer(id, function(input, output, session) {
     
-    # Reativo para preparar os dados específicos para o gráfico
     dados_para_plotar <- reactive({
-      
-      # Garante que os dados da clusterização estejam disponíveis
       req(dados_cluster_definicoes())
       
       df_definicoes <- dados_cluster_definicoes()
       metodo <- metodologia_selecionada()
       
-      # Filtra os dados de definição do cluster com base no contexto (metodologia, mês, hora)
-      if (metodo == "Single Period") {
-        # Para single period, pegamos o primeiro (e único) resultado
-        dados_elbow <- df_definicoes$elbow_data[[1]]
-        n_cluster_otimo <- df_definicoes$cluster[nrow(df_definicoes)]
-        
-      } else if (metodo == "Monthly") {
-        req(mes_selecionado())
-        mes_num <- match(mes_selecionado(), month.name)
-        
-        # Filtra pela metodologia e mês
-        linha_contexto <- df_definicoes %>%
-          dplyr::filter(metodologia == metodo, mes == mes_num)
-        
-        dados_elbow <- linha_contexto$elbow_data[[1]]
-        n_cluster_otimo <- linha_contexto$cluster[nrow(linha_contexto)]
-        
-      } else if (metodo == "Hourly") {
-        # Lógica similar para o modo horário...
-      } # ... etc. para outras metodologias
+      tabela_meses <- data.frame(
+        nome_completo = month.name,
+        nome_abreviado = c('jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez')
+      )
       
-      # Retorna uma lista com os dados do gráfico e o k ótimo
+      linha_contexto <- switch(metodo,
+       "Single Period" = { df_definicoes },
+       "Monthly" = {
+         req(mes_selecionado())
+         mes_filtrar <- tabela_meses$nome_abreviado[tabela_meses$nome_completo == mes_selecionado()]
+         df_definicoes %>% dplyr::filter(Month == mes_filtrar)
+       },
+       "Hourly" = {
+         req(hora_selecionada())
+         df_definicoes %>% dplyr::filter(Hour == hora_selecionada())
+       },
+       "Monthly and Hourly" = {
+         req(mes_selecionado(), hora_selecionada())
+         mes_filtrar <- tabela_meses$nome_abreviado[tabela_meses$nome_completo == mes_selecionado()]
+         df_definicoes %>% dplyr::filter(Month == mes_filtrar, Hour == hora_selecionada())
+       }
+      )
+      
+      validate(
+        need(nrow(linha_contexto) > 0, "Não foi possível encontrar dados do método do cotovelo para a seleção atual.")
+      )
+      
+      dados_elbow <- linha_contexto$elbow_data[[1]]
+      n_cluster_otimo <- nrow(linha_contexto)
+      
       list(dados_elbow = dados_elbow, n_cluster = n_cluster_otimo)
     })
     
-    # Renderiza o gráfico Plotly
     output$elbowChart <- plotly::renderPlotly({
       
       info_plot <- dados_para_plotar()
@@ -55,24 +64,32 @@ elbowPlotServer <- function(id, dados_cluster_definicoes, metodologia_selecionad
       base <- info_plot$dados_elbow
       num_cl <- info_plot$n_cluster
       
-      # Constrói o título dinamicamente
-      titulo <- paste0("Application of the Elbow Method (", metodologia_selecionada(), ")")
+      titulo_base <- "Aplicação do Método do Cotovelo"
+      subtitulo <- switch(metodologia_selecionada(),
+                          "Monthly" = paste("para o Mês de", mes_selecionado()),
+                          "Hourly" = paste("para a Hora", hora_selecionada()),
+                          "Monthly and Hourly" = paste("para", mes_selecionado(), "- Hora", hora_selecionada()),
+                          "" 
+      )
       
-      p <- ggplot(data = base, aes(k.values, wss_values)) +
-        geom_line(color = "black") +
-        geom_point(size = 2, color = "black") +
+      titulo_completo <- paste(titulo_base, subtitulo)
+      
+      p <- ggplot2::ggplot(data = base, ggplot2::aes(k.values, wss_values)) +
+        ggplot2::geom_line(color = "black") +
+        ggplot2::geom_point(size = 2, color = "black") +
         
-        # Destaca o ponto do cluster ótimo escolhido pelo algoritmo
-        geom_point(data = base[num_cl, ], aes(k.values, wss_values), color = "#B53737", size = 4) +
-        scale_x_discrete(limits = as.factor(base$k.values)) +
-        labs(
-          title = titulo,
-          x = "Number of clusters K",
-          y = "With-in-Sum-of-Squares (WSS)"
+        ggplot2::geom_point(data = base[num_cl, ], ggplot2::aes(k.values, wss_values), color = "#16a34a", size = 4) +
+        ggplot2::geom_vline(xintercept = num_cl, linetype = "dashed", color = "#16a34a") +
+        
+        ggplot2::labs(
+          title = titulo_completo,
+          x = "Número de Clusters (k)",
+          y = "Soma dos Quadrados Intra-clusters (WSS)"
         ) +
-        theme_minimal()
+        ggplot2::theme_minimal()
       
       plotly::ggplotly(p)
     })
+    
   })
 }

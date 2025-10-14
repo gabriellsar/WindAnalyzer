@@ -1,5 +1,5 @@
 wss = function(k,aux){
-  a = kmeans(aux, k, nstart = 10 )
+  a = kmeans(aux, k, nstart = 10, iter.max = 100)
   return(a)
 }
 
@@ -31,9 +31,9 @@ clusterizacao = function(temp){
     n_cluster=n_cluster-1
   }
   
-  cl = kmeans(temp$speed, n_cluster)
+  cl = kmeans(temp$speed, n_cluster,iter.max = 100)
   while (min(cl$size) < 4) {
-    cl = kmeans(temp$speed, n_cluster)
+    cl = kmeans(temp$speed, n_cluster,iter.max = 100)
   }
   Vet_cluster = cl$cluster
   Vet_speed = cl$centers
@@ -68,10 +68,8 @@ clusterizacao = function(temp){
 
 clusterizar_dados <- function(dados_EM, metodologia) {
   
-  # Cria uma coluna de ID para garantir a ordem original ao final
   dados_EM$id_original <- 1:nrow(dados_EM)
   
-  # Define as colunas de agrupamento com base na metodologia
   variaveis_agrupamento <- switch(metodologia,
                                   "Single Period" = NULL,
                                   "Monthly" = "Month",

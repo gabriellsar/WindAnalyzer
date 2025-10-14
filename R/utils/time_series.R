@@ -29,8 +29,8 @@ combinar_dados_potencia_velocidade <- function(dados_potencia_brutos, dados_velo
   )
   
   ordem_meses <- c('jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez')
-  dados_combinados$MonthAbbr <- factor(format(dados_combinados$Timestamp, "%b"), levels = ordem_meses)
-
+  dados_combinados$Month <- factor(format(dados_combinados$Timestamp, "%b"), levels = ordem_meses)
+  
   dados_combinados$Estimado <- NA
 
   dados_finais <- dados_combinados %>%
@@ -38,7 +38,6 @@ combinar_dados_potencia_velocidade <- function(dados_potencia_brutos, dados_velo
       data = Timestamp,
       power = Potencia,
       speed = Velocidade,
-      Month = MonthAbbr 
     ) %>%
     dplyr::mutate(
       Year  = lubridate::year(data),
