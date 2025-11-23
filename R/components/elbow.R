@@ -4,7 +4,7 @@ elbowPlotUI <- function(id) {
   ns <- NS(id)
   
   tagList(
-    tags$h4("Gráfico do Método do Cotovelo"),
+    tags$h4("Elbow Method Chart"),
     shinycssloaders::withSpinner(
       plotly::plotlyOutput(ns("elbowChart")),
       type = 4,
@@ -82,9 +82,8 @@ elbowPlotServer <- function(id, dados_cluster_definicoes, metodologia_selecionad
         ggplot2::geom_vline(xintercept = num_cl, linetype = "dashed", color = "#16a34a") +
         
         ggplot2::labs(
-          title = titulo_completo,
-          x = "Número de Clusters (k)",
-          y = "Soma dos Quadrados Intra-clusters (WSS)"
+          x = "Number of Cluster (k)",
+          y = "Within-Cluster Sum of Squares (WSS)"
         ) +
         ggplot2::theme_minimal()
       

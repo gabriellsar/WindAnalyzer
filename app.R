@@ -2,7 +2,7 @@ library(shiny)
 library(leaflet) 
 library(shinyjs)
 library(feather)
-library(ggplot2)
+library(ggplot2)   
 library(tibble)
 library(dplyr)
 library(tidyr)
@@ -45,7 +45,7 @@ ui <- fluidPage(
     tags$link(rel = "stylesheet", type = "text/css", href = "analysis.css"),
     tags$link(rel = "stylesheet", type = "text/css", href = "map_input.css"),
     tags$link(rel = "stylesheet", type = "text/css", href = "charts.css"),
-    
+             
     tags$style(HTML("
       .nav-tabs {
         display: none;

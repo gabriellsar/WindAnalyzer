@@ -33,7 +33,6 @@ analysisUI <- function(id) {
           )
         ),
       ),
-      
       div(class = "analysis-container",
           div(class = "analysis-card",
               div(class = "method-btn-group",
@@ -44,7 +43,7 @@ analysisUI <- function(id) {
               ),
               
               div(style = "margin-top: 20px;",
-                  actionButton(ns("run_analysis"), "Aplicar Método e Plotar Gráfico", class = "btn-success", icon = icon("play"))
+                  actionButton(ns("run_analysis"), "Apply Methodology", class = "btn-success", icon = icon("play"))
               )
           ),
           

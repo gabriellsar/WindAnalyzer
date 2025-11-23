@@ -4,7 +4,7 @@ scatterplotUI <- function(id) {
   tagList(
     tags$div(
       class = "chart-container",
-      tags$h4("Gráfico de Dispersão dos Clusters"),
+      tags$h4("Cluster Distribution (Wind Speed vs. Power)"),
       plotlyOutput(ns("cluster_scatterplot"))
     )
   )
@@ -32,9 +32,8 @@ scatterplotServer <- function(id, dados_para_plotar) {
         marker = list(size = 5, opacity = 0.7)
       ) %>%
         layout(
-          title = "Distribuição dos Clusters (Velocidade vs. Potência)",
-          xaxis = list(title = "Velocidade do Vento (m/s)"),
-          yaxis = list(title = "Potência (kW)"),
+          xaxis = list(title = "Wind Speed (m/s)"),
+          yaxis = list(title = "Power (kW)"),
           legend = list(title = list(text = '<b>Cluster</b>'))
         )
       

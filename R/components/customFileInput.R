@@ -30,7 +30,7 @@ customFileInputUI <- function(inputId, label, placeholder_text = "Click to selec
         class = "file-input-wrapper loaded",
         style = "background-color: #e8f5e9; border: 1px solid #16a34a;",
         
-        shiny::icon("check-circle", style = "color: #16a34a;"),
+        shiny::icon("check-circle", style = "color: #f8fafc;"),
         tags$span(loaded_filename, style = "color: #16a34a; font-weight: 500;")
       )
     } else {

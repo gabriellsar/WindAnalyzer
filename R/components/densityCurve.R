@@ -2,7 +2,7 @@ densityPlotUI <- function(id) {
   ns <- NS(id)
   
   tagList(
-    tags$h4("Gráfico de Densidade da Potência por Cluster"),
+    tags$h4("Power Density Graph by Cluster", style = "margin-top:10px;"),
     
     div(style = "display: flex; align-items: center; gap: 30px; margin-bottom: 10px;",
         radioButtons(ns("plot_type"), "Tipo de Visualização:",
@@ -59,7 +59,7 @@ densityPlotServer <- function(id, dados_para_plotar) {
         p <- ggplot2::ggplot(plot_data, ggplot2::aes(x = power, fill = cluster, color = cluster)) +
           ggplot2::geom_density(alpha = 0.5) +
           ggplot2::facet_wrap(~ cluster, ncol = 4, scales = "free_y") +
-          ggplot2::labs(title = "Distribuição de Potência por Cluster (Visualização em Grade)", x = "Potência (kW)", y = "Densidade") +
+          ggplot2::labs(x = "Power (kW)", y = "Density") +
           ggplot2::theme_minimal() +
           ggplot2::theme(legend.position = "none")
         
@@ -69,9 +69,8 @@ densityPlotServer <- function(id, dados_para_plotar) {
         p <- ggplot2::ggplot(plot_data, ggplot2::aes(x = power, fill = cluster, color = cluster)) +
           ggplot2::geom_density(alpha = 0.5) +
           ggplot2::labs(
-            title = paste0("Distribuição de Potência por Cluster (Página ", input$page_num, ")"),
-            x = "Potência (kW)",
-            y = "Densidade",
+            x = "Power (kW)",
+            y = "Density",
             fill = "Cluster",
             color = "Cluster"
           ) +
