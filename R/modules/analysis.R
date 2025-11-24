@@ -1,373 +1,412 @@
 analysisUI <- function(id) {
   ns <- NS(id)
-  
-  
   tagList(
     useShinyjs(),
     tags$div(
       class = "container-principal", 
       
-      fluidRow(
-        column(
-          width = 12,
-          tags$div(
-            class = "header-caixa",
-            tags$h3(class = "header-title", "WindAnalyzer"),
-            
-            tags$h3(class = "header-subtitle", "- An Interative Tool for Wind Energy Reanalysis in Brazil")
-          )
-        )
-      ),
+      fluidRow(column(12, tags$div(class = "header-caixa",
+              tags$h3(class = "header-title", "WindAnalyzer"),
+              tags$h3(class = "header-subtitle", "- An Interative Tool for Wind Energy Reanalysis in Brazil")
+      ))),
       
-      tags$div(
-        class = "conteudo-caixa",
+      tags$div(class = "conteudo-caixa",
         uiOutput(ns("main_content")),
-        
-        tags$div(
-          id = "windanalyzer_map_container",
-          class = "map-transition-container", 
-          
-          tags$div(
-            class = "map-content-wrapper",
-            mapInputUI(ns("map_input_module"))
-          )
+        tags$div(id = "windanalyzer_map_container", class = "map-transition-container", 
+                tags$div(class = "map-content-wrapper", mapInputUI(ns("map_input_module")))
         ),
       ),
       div(class = "analysis-container",
-          div(class = "analysis-card",
-              div(class = "method-btn-group",
-                  actionButton(ns("btn_single"), label = "Single Period", icon = icon("circle"), class = "method-btn active"),
-                  actionButton(ns("btn_monthly"), label = "Monthly", icon = icon("calendar-alt"), class = "method-btn"),
-                  actionButton(ns("btn_hourly"), label = "Hourly", icon = icon("clock"), class = "method-btn"),
-                  actionButton(ns("btn_monthly_hourly"), label = "Monthly & Hourly", icon = icon("calendar-check"), class = "method-btn")
-              ),
-              
-              div(style = "margin-top: 20px;",
-                  actionButton(ns("run_analysis"), "Apply Methodology", class = "btn-success", icon = icon("play"))
-              )
+        div(class = "analysis-card",
+          div(class = "method-btn-group",
+            actionButton(ns("btn_single"), label = "Single Period", icon = icon("circle"), class = "method-btn active"),
+            actionButton(ns("btn_monthly"), label = "Monthly", icon = icon("calendar-alt"), class = "method-btn"),
+            actionButton(ns("btn_hourly"), label = "Hourly", icon = icon("clock"), class = "method-btn"),
+            actionButton(ns("btn_monthly_hourly"), label = "Monthly & Hourly", icon = icon("calendar-check"), class = "method-btn")
           ),
-          
+          div(style = "margin-top: 20px;",
+            actionButton(ns("run_analysis"), "Apply Methodology", class = "btn-success", icon = icon("play"))
+          )),
+        
           div(class = "plot-grid",
-              div(class = "analysis-card",
-                  div(class = "plot-filters",
-                      div(id = ns("month_filter_panel"), style = "display: none;",
-                          selectInput(ns("mes_selecionado"), "Selecione o Mês:",
-                                      choices = month.name, selected = month.name[1])
-                      ),
-                      div(id = ns("hour_filter_panel"), style = "display: none;",
-                          sliderInput(ns("hora_selecionada"), "Selecione a Hora:",
-                                      min = 0, max = 23, value = 0, step = 1, width = "100%")
-                      )
-                  ),
-                  hr(), # Linha separadora
-                  fluidRow(
-                    column(width = 6, elbowPlotUI(ns("elbow_module"))),
-                    column(width = 6, scatterplotUI(ns("scatterplot_module")))
-                  )
-              ),
+            div(class = "analysis-card",
+              div(class = "plot-filters",
+                div(id = ns("month_filter_panel"), style = "display: none;",
+                  selectInput(ns("mes_selecionado"), "Selecione o Mês:",
+                    choices = month.name, selected = month.name[1])
+                ),
+                div(id = ns("hour_filter_panel"), style = "display: none;",
+                  sliderInput(ns("hora_selecionada"), "Selecione a Hora:",
+                                min = 0, max = 23, value = 0, step = 1, width = "100%")
+                )),
               
-              div(class = "analysis-card",
-                  densityPlotUI(ns("density_module"))
-              )
+                hr(),
+                fluidRow(
+                  column(width = 6, elbowPlotUI(ns("elbow_module"))),
+                  column(width = 6, scatterplotUI(ns("scatterplot_module")))
+                )),
+          div(class = "analysis-card",
+              densityPlotUI(ns("density_module"))
           )
+        ),
+        
+        div(class = "analysis-card",
+          tags$h4("Model Validation (In-Sample)", style = "color: #286090; margin-bottom: 20px; border-bottom: 1px solid #eee; padding-bottom: 10px;"),
+          fluidRow(
+            column(6, validationScatterUI(ns("val_scatter_module"))),
+            column(6, validationDensityUI(ns("val_density_module")))
+          )
+        ),
+        div(class = "analysis-card",
+        tags$h4("Future Projection", style = "color: #286090; border-bottom: 1px solid #eee; padding-bottom: 10px; margin-bottom: 20px;"),
+        
+        fluidRow(
+          column(4,
+            tags$div(class = "upload-wrapper",
+              uiOutput(ns("projection_file_ui"))),
+           tags$hr(),
+           numericInput(ns("num_cenarios"), "Number of Scenarios:", value = 100, min = 10, max = 1000),
+           actionButton(ns("run_projection"), "Generate Projection", class = "btn-success", style="width:100%; margin-top:10px;", icon = icon("chart-line"))
+          ),
+          column(8, projectionSeriesUI(ns("projection_module"))
+          )
+        )
       )
     )
   )
-}
+)}
 
 analysisServer <- function(id, lonlat_data, estacoes_data, dados_estacoes_data, tokens) {
-    moduleServer(id, function(input, output, session) {
-      ns <- session$ns
-      
-      file_input_ids <- c("wind_speed_file", "wind_power_file")
-     
-      rv_files <- reactiveValues()
-      
-      for (file_id in file_input_ids) {
-        rv_files[[file_id]] <- list(
-          data = NULL, 
-          name = NULL,
-  
-          config = list(
-            header = TRUE,
-            delim = ";",
-            dec = "."
-          )
-        )
-      }
-      
-      generation_trigger <- mapInputServer(
-        "map_input_module",
-        lonlat_data = lonlat_data, estacoes_data = estacoes_data,
-        dados_estacoes_data = dados_estacoes_data, tokens = tokens
+  moduleServer(id, function(input, output, session) {
+    ns <- session$ns
+    
+    # 1. Gestão de Arquivos de Upload
+    rv_files <- reactiveValues(
+      wind_speed_file = list(data = NULL, name = NULL, config = list(header = TRUE, delim = ";", dec = ".")),
+      wind_power_file = list(data = NULL, name = NULL, config = list(header = TRUE, delim = ";", dec = ".")),
+      projection_speed_file = list(data = NULL, name = NULL, config = list(header = TRUE, delim = ";", dec = "."))
+    )
+    
+    setup_file_observers(input, ns, rv_files, "wind_speed_file", "Wind Speed Settings")
+    setup_file_observers(input, ns, rv_files, "wind_power_file", "Power Data Settings")
+    setup_file_observers(input, ns, rv_files, "projection_speed_file", "Projection Settings")
+    
+    output$main_content <- renderUI({
+      labels <- list(
+        wind_speed_file = "Historical Wind Speed Data at Turbine Rotor Height",
+        wind_power_file = "Historical Wind Power Data"
       )
-      
-      selected_methodology <- reactiveVal("Single Period")
-      btn_ids <- c("btn_single", "btn_monthly", "btn_hourly", "btn_monthly_hourly")
-      
-      lapply(btn_ids, function(btn_id) {
-        observeEvent(input[[btn_id]], {
-          lapply(btn_ids, function(id) shinyjs::removeClass(id, "active"))
-          shinyjs::addClass(btn_id, "active")
-          
-          method_value <- switch(btn_id,
-                                 "btn_single" = "Single Period",
-                                 "btn_monthly" = "Monthly",
-                                 "btn_hourly" = "Hourly",
-                                 "btn_monthly_hourly" = "Monthly and Hourly")
-          selected_methodology(method_value)
-        })
-      })
-      
-      observe({
-        method <- selected_methodology()
-        is_monthly <- method %in% c("Monthly", "Monthly and Hourly")
-        is_hourly <- method %in% c("Hourly", "Monthly and Hourly")
-        
-        shinyjs::toggleElement(id = "month_filter_panel", condition = is_monthly)
-        shinyjs::toggleElement(id = "hour_filter_panel", condition = is_hourly)
-        shinyjs::toggleElement(id = "filters_hr", condition = is_monthly || is_hourly)
-      })
-      
-      analysis_results <- eventReactive(input$run_analysis, {
-        req(rv_files$wind_speed_file$data, rv_files$wind_power_file$data, cancelOutput = TRUE)
-        
-        showNotification("Iniciando a análise de clusterização...", type = "message")
-        
-        dados_combinados <- combinar_dados_potencia_velocidade(
-          dados_potencia_brutos = rv_files$wind_power_file$data,
-          dados_velocidade_brutos = rv_files$wind_speed_file$data
-        )
-        
-        if (is.null(dados_combinados) || nrow(dados_combinados) == 0) {
-          showNotification("Erro: Não foi encontrada correspondência entre os dados.", type = "error", duration = 10)
-          return(NULL)
-        }
-        
-        resultados <- clusterizar_dados(dados_combinados, selected_methodology())
-        showNotification("Análise concluída com sucesso!", type = "message")
-        
-        return(list(
-          dados_originais = dados_combinados,
-          resultados_cluster = resultados
-        ))
-      })
-      
-      observeEvent(generation_trigger(), {
-        params <- generation_trigger() 
-        
-        notification_id <- showNotification("Generating time series, please wait...", duration = NULL, type = "message")
-        on.exit(removeNotification(notification_id), add = TRUE) 
-        
-        generated_series_list <- generate_wind_speed_series(
-          target_merra_lat = params$merra_point$lat, target_merra_lon = params$merra_point$lon,
-          time_scale = params$time_scale, rotor_height = params$rotor_height,
-          start_date = params$start_date, end_date = params$end_date,
-          use_inmet_correction = params$use_correction, correction_type = params$correction_type,
-          inmet_station_info = params$inmet_station, inmet_timeseries_data = dados_estacoes_data,
-          merra2_grid_points = lonlat_data, tokens = tokens
-        )
-        
-        dados_serie <- generated_series_list$Serie
-        dados_gerados_padronizados <- dados_serie %>%
-          dplyr::transmute(
-            Data = as.Date(time),
-            Hora = lubridate::hour(time),
-            Velocidade = speed
+      div(class = "upload-container",
+          div(class = "upload-wrapper", 
+              customFileInputUI(ns("wind_speed_file"), label = labels$wind_speed_file, loaded_filename = rv_files$wind_speed_file$name),
+              div(style = "padding: 0 5px; font-size: 0.75rem; color: #555;",
+                  span("* Don't have a file? "),
+                  tags$a("Generate a historical data series here.", href = "#", onclick = "showMapContainer(); return false;", style = "color: #16a34a; font-weight: 500; text-decoration: underline;")
+              )
+          ),
+          div(class = "upload-wrapper", 
+              customFileInputUI(ns("wind_power_file"), label = labels$wind_power_file, loaded_filename = rv_files$wind_power_file$name)
           )
-        
-        rv_files[["wind_speed_file"]] <- list(
-          data = dados_gerados_padronizados,
-          name = paste0("Generated series: Lat ", round(params$lat, 2), ", Lon ", round(params$lon, 2))
-        )
-        
-        showNotification("Time series generated successfully!", type = "message", duration = 5)
-        runjs("hideMapContainer();")
-      })
-      
-      active_config_id <- reactiveVal(NULL)
-      
-      lapply(file_input_ids, function(id) {
-        observeEvent(input[[paste0(id, "_config")]], {
-          
-          active_config_id(id)
-          
-          current_config <- rv_files[[id]]$config
-          
-          showModal(modalDialog(
-            title = "CSV Import Settings",
-            
-            checkboxInput(ns("csv_header"), "File has a header row", value = current_config$header),
-            
-            radioButtons(ns("csv_delim"), "Column Separator (Delimiter)",
-                         choices = c("Comma (,)" = ",", "Semicolon (;)" = ";", "Tab" = "\t"),
-                         selected = current_config$delim, inline = TRUE),
-            
-            radioButtons(ns("csv_dec"), "Decimal Separator",
-                         choices = c("Dot (.)" = ".", "Comma (,)" = ","),
-                         selected = current_config$dec, inline = TRUE),
-            
-            footer = tagList(
-              modalButton("Cancel"),
-              actionButton(ns("save_csv_config"), "Apply and Save", class = "btn-success")
-            ),
-            easyClose = TRUE
-          ))
-        })
-      })
-      
-      observeEvent(input$save_csv_config, {
-        req(active_config_id()) 
-        id <- active_config_id()
-        
-        rv_files[[id]]$config$header <- input$csv_header
-        rv_files[[id]]$config$delim <- input$csv_delim
-        rv_files[[id]]$config$dec <- input$csv_dec
-        
-        removeModal() 
-        showNotification(paste("Settings for", id, "updated."), type = "message")
-      })
-      
-      lapply(file_input_ids, function(id) {
-        observeEvent(input[[id]], {
-          file_input_value <- input[[id]]
-          req(file_input_value)
-          
-          config <- rv_files[[id]]$config
-          
-          tryCatch({
-            dados_do_arquivo <- readr::read_delim(
-              file = file_input_value$datapath,
-              delim = config$delim,
-              col_names = config$header,
-              locale = readr::locale(decimal_mark = config$dec)
-            )
-            
-            rv_files[[id]]$data <- dados_do_arquivo
-            rv_files[[id]]$name <- file_input_value$name
-            
-            showNotification(paste("File '", file_input_value$name, "' uploaded successfully!"), type = "message")
-            
-          }, error = function(e) {
-            showNotification(paste("Error reading file:", e$message), type = "error")
-          })
-        })
-      })
-      
-      output$main_content <- renderUI({
-        labels <- list(
-          wind_speed_file = "Historical Wind Speed Data at Turbine Rotor Height",
-          wind_power_file = "Historical Wind Power Data"
-        )
-        
-        ui_components <- lapply(file_input_ids, function(id) {
-          
-          if (id == "wind_speed_file") {
-            tags$div(
-              class = "upload-wrapper",
-              customFileInputUI(
-                inputId = ns(id),
-                label = labels[[id]],
-                loaded_filename = rv_files[[id]]$name
-              ),
-              tags$div(
-                style = "padding: 0 5px; font-size: 0.75rem; color: #555;",
-                tags$span("* Don't have a file? "),
-                tags$a(
-                  "Generate a historical data series here.", href = "#",
-                  onclick = "showMapContainer(); return false;",
-                  style = "color: #16a34a; font-weight: 500; text-decoration: underline;"
-                )
-              )
-            )
-          } else {
-            tags$div(
-              class = "upload-wrapper",
-              customFileInputUI(
-                inputId = ns(id),
-                label = labels[[id]],
-                loaded_filename = rv_files[[id]]$name
-              )
-            )
-          }
-        })
-        
-        tags$div(
-          class = "upload-container",
-          ui_components
-        )
-      })
-      
-      definicoes_reativo_elbow <- reactive({
-        resultados_completos <- analysis_results()
-        req(resultados_completos)
-        
-        resultados_completos$resultados_cluster$definicoes_clusters
-      })
-      
-      dados_filtrados_para_plot <- reactive({
-        resultados_completos <- analysis_results()
-        metodologia <- selected_methodology()
-        req(resultados_completos)
-        
-        tabela_meses <- data.frame(
-          nome_completo = month.name,
-          nome_abreviado = c('jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez')
-        )
-        
-        dados_orig <- resultados_completos$dados_originais
-        atribuicoes <- resultados_completos$resultados_cluster$atribuicoes
-        
-        dados_orig$..original_row_index.. <- 1:nrow(dados_orig)
-        
-        dados_filtrados <- switch(metodologia,
-          "Single Period" = { dados_orig },
-          "Monthly" = {
-            req(input$mes_selecionado)
-            mes_filtrar <- tabela_meses$nome_abreviado[tabela_meses$nome_completo == input$mes_selecionado]
-            dados_orig %>% dplyr::filter(Month == mes_filtrar)
-          },
-          "Hourly" = {
-            req(input$hora_selecionada)
-            dados_orig %>% dplyr::filter(Hour == input$hora_selecionada)
-          },
-          "Monthly and Hourly" = {
-            req(input$mes_selecionado, input$hora_selecionada)
-            mes_filtrar <- tabela_meses$nome_abreviado[tabela_meses$nome_completo == input$mes_selecionado]
-            dados_orig %>% dplyr::filter(Month == mes_filtrar, Hour == input$hora_selecionada)
-          }
-        )
-        
-        validate(
-          need(nrow(dados_filtrados) > 0, "Não existem dados para o grupo selecionado.")
-        )
-        
-        indices_filtrados <- dados_filtrados$..original_row_index..
-        atribuicoes_filtradas <- atribuicoes[indices_filtrados]
-        
-        dados_filtrados$cluster <- as.factor(atribuicoes_filtradas)
-        
-        dados_filtrados$..original_row_index.. <- NULL
-        
-        return(dados_filtrados)
-      })
-      
-      scatterplotServer(
-        "scatterplot_module",
-        dados_para_plotar = dados_filtrados_para_plot 
-        )
-      
-      densityPlotServer(
-        "density_module",
-        dados_para_plotar = dados_filtrados_para_plot
-        )
-      
-      elbowPlotServer(
-        id = "elbow_module",
-        dados_cluster_definicoes = definicoes_reativo_elbow,
-        metodologia_selecionada = selected_methodology,
-        mes_selecionado = reactive(input$mes_selecionado),
-        hora_selecionada = reactive(input$hora_selecionada)
       )
     })
+    
+    output$projection_file_ui <- renderUI({
+      customFileInputUI(ns("projection_speed_file"), 
+        label = "Upload Future Wind Speed (CSV)", 
+        loaded_filename = rv_files$projection_speed_file$name)
+    })
+    
+    # 2. Controle da Metodologia
+    selected_methodology <- reactiveVal("Single Period")
+    btn_ids <- c("btn_single", "btn_monthly", "btn_hourly", "btn_monthly_hourly")
+    lapply(btn_ids, function(btn_id) {
+      observeEvent(input[[btn_id]], {
+        lapply(btn_ids, function(id) shinyjs::removeClass(id, "active"))
+        shinyjs::addClass(btn_id, "active")
+        
+        method_value <- switch(btn_id,
+         "btn_single" = "Single Period",
+         "btn_monthly" = "Monthly",
+         "btn_hourly" = "Hourly",
+         "btn_monthly_hourly" = "Monthly and Hourly")
+        selected_methodology(method_value)
+      })
+    })
+    observe({
+      method <- selected_methodology()
+      is_monthly <- method %in% c("Monthly", "Monthly and Hourly")
+      is_hourly <- method %in% c("Hourly", "Monthly and Hourly")
+      
+      shinyjs::toggleElement(id = "month_filter_panel", condition = is_monthly)
+      shinyjs::toggleElement(id = "hour_filter_panel", condition = is_hourly)
+      shinyjs::toggleElement(id = "filters_hr", condition = is_monthly || is_hourly)
+    })
+    
+    # 3. Processamento da Metodologia
+    analysis_results <- eventReactive(input$run_analysis, {
+      req(rv_files$wind_speed_file$data, rv_files$wind_power_file$data, cancelOutput = TRUE)
+      showNotification("Starting analysis...", type = "message")
+      
+      dados_combinados <- combinar_dados_potencia_velocidade(
+        dados_potencia_brutos = rv_files$wind_power_file$data,
+        dados_velocidade_brutos = rv_files$wind_speed_file$data
+      )
+      if (is.null(dados_combinados) || nrow(dados_combinados) == 0) {
+        showNotification("Error: No data match found.", type = "error", duration = 10)
+        return(NULL)
+      }
+      
+      metodo <- selected_methodology()
+      resultados <- clusterizar_dados(dados_combinados, metodo)
+      
+      if (is.null(resultados$atribuicoes) || length(resultados$atribuicoes) != nrow(dados_combinados)) {
+        showNotification("Clustering failed: Could not assign clusters correctly.", type = "error")
+        return(NULL)
+      }
+      
+      dados_combinados$cluster <- as.numeric(resultados$atribuicoes)
+      if(any(is.na(dados_combinados$cluster))) {
+        showNotification("Warning: Some points could not be clustered.", type = "warning")
+        dados_combinados <- dados_combinados[!is.na(dados_combinados$cluster), ]
+      }
+      
+      modelos_kde <- criar_modelos_kde(dados_combinados, metodo)
+      
+      matriz_simulacao <- simular_potencia_kde(
+        dados_para_simular = dados_combinados,
+        tabela_modelos_kde = modelos_kde,
+        tabela_definicoes_clusters = resultados$definicoes_clusters,
+        metodologia = metodo,
+        total_cenarios = 100
+      )
+      dados_combinados$estimado <- rowMeans(matriz_simulacao, na.rm = TRUE)
+      showNotification("Analysis completed!", type = "message")
+      
+      return(list(
+        dados_originais = dados_combinados,
+        resultados_cluster = resultados,
+        modelos_kde = modelos_kde,
+        metodo_atual = metodo
+      ))
+    })
+    
+    # 4. Geração de Série
+    generation_trigger <- mapInputServer(
+      "map_input_module",
+      lonlat_data = lonlat_data, estacoes_data = estacoes_data,
+      dados_estacoes_data = dados_estacoes_data, tokens = tokens
+    )
+    observeEvent(generation_trigger(), {
+      params <- generation_trigger() 
+      notification_id <- showNotification("Generating time series, please wait...", duration = NULL, type = "message")
+      on.exit(removeNotification(notification_id), add = TRUE) 
+      
+      generated_series_list <- generate_wind_speed_series(
+        target_merra_lat = params$merra_point$lat, target_merra_lon = params$merra_point$lon,
+        time_scale = params$time_scale, rotor_height = params$rotor_height,
+        start_date = params$start_date, end_date = params$end_date,
+        use_inmet_correction = params$use_correction, correction_type = params$correction_type,
+        inmet_station_info = params$inmet_station, inmet_timeseries_data = dados_estacoes_data,
+        merra2_grid_points = lonlat_data, tokens = tokens
+      )
+      
+      dados_serie <- generated_series_list$Serie
+      dados_gerados_padronizados <- dados_serie %>%
+        dplyr::transmute(
+          Data = as.Date(time),
+          Hora = lubridate::hour(time),
+          Velocidade = speed
+        )
+      
+      rv_files[["wind_speed_file"]] <- list(
+        data = dados_gerados_padronizados,
+        name = paste0("Generated series: Lat ", round(params$lat, 2), ", Lon ", round(params$lon, 2))
+      )
+      
+      showNotification("Time series generated successfully!", type = "message", duration = 5)
+      runjs("hideMapContainer();")
+    })
+    
+    # 5. Output de Gráficos
+    definicoes_reativo_elbow <- reactive({
+      rev <- analysis_results()
+      req(rev)
+      rev$resultados_cluster$definicoes_clusters
+    })
+    dados_filtrados_para_plot <- reactive({
+      rev <- analysis_results()
+      req(rev)
+      
+      dados_orig <- rev$dados_originais
+      atribuicoes <- rev$resultados_cluster$atribuicoes
+      metodologia <- rev$metodo_atual
+      
+      tabela_meses <- data.frame(
+        nome_completo = month.name,
+        nome_abreviado = c('jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez')
+      )
+      
+      dados_orig$..original_row_index.. <- 1:nrow(dados_orig)
+      
+      dados_filtrados <- switch(metodologia,
+        "Single Period" = { dados_orig },
+        "Monthly" = {
+          req(input$mes_selecionado)
+          mes_filtrar <- tabela_meses$nome_abreviado[tabela_meses$nome_completo == input$mes_selecionado]
+          dados_orig %>% dplyr::filter(Month == mes_filtrar)
+        },
+        "Hourly" = {
+          req(input$hora_selecionada)
+          dados_orig %>% dplyr::filter(Hour == input$hora_selecionada)
+        },
+        "Monthly and Hourly" = {
+          req(input$mes_selecionado, input$hora_selecionada)
+          mes_filtrar <- tabela_meses$nome_abreviado[tabela_meses$nome_completo == input$mes_selecionado]
+          dados_orig %>% dplyr::filter(Month == mes_filtrar, Hour == input$hora_selecionada)
+        }
+      )
+      validate(
+        need(nrow(dados_filtrados) > 0, "Não existem dados para o grupo selecionado.")
+      )
+      
+      indices_filtrados <- dados_filtrados$..original_row_index..
+      atribuicoes_filtradas <- atribuicoes[indices_filtrados]
+      
+      dados_filtrados$cluster <- as.factor(atribuicoes_filtradas)
+      dados_filtrados$..original_row_index.. <- NULL
+      
+      return(dados_filtrados)
+    })
+    dados_validacao <- reactive({
+      res <- analysis_results(); req(res)
+      df <- res$dados_originais
+      
+      hist <- df %>% dplyr::select(speed, power) %>% dplyr::mutate(origin = "Historical")
+      est <- df %>% dplyr::select(speed) %>% dplyr::mutate(power = df$estimado, origin = "Estimated") 
+      dplyr::bind_rows(hist, est)
+    })
+    
+    scatterplotServer("scatterplot_module",dados_para_plotar = dados_filtrados_para_plot)
+    densityPlotServer("density_module",dados_para_plotar = dados_filtrados_para_plot)
+    elbowPlotServer("elbow_module", definicoes_reativo_elbow,reactive(analysis_results()$metodo_atual),reactive(input$mes_selecionado),reactive(input$hora_selecionada))
+    validationScatterServer("val_scatter_module", dados_validacao)
+    validationDensityServer("val_density_module", dados_validacao)
+    
+    # Projeção Futura
+    projection_raw <- eventReactive(input$run_projection, {
+      req(analysis_results(), rv_files$projection_speed_file$data)
+      
+      treino <- analysis_results()
+      input_futuro <- rv_files$projection_speed_file$data
+      
+      showNotification("Processando arquivo de projeção...", type = "message")
+      
+      # --- 1. Detecção Inteligente de Colunas ---
+      # O arquivo enviado tem 3 colunas: Date, Hour, Speed.
+      # Vamos verificar se estamos nesse cenário ou no antigo (2 colunas).
+      
+      tem_tres_colunas <- ncol(input_futuro) >= 3
+      
+      if (tem_tres_colunas) {
+        # Cenário Novo: Date | Hour | Speed
+        # Assume que a col 1 é Data, col 2 é Hora, col 3 é Velocidade
+        nomes_cols <- names(input_futuro)
+        # Renomeia temporariamente para facilitar
+        names(input_futuro)[1] <- "Data_Base"
+        names(input_futuro)[2] <- "Hora_Num"
+        names(input_futuro)[3] <- "Velocidade_Raw"
+        
+        # Converte a data base
+        datas_base <- tryCatch(
+          as.POSIXct(input_futuro$Data_Base, tz="UTC"),
+          error = function(e) as.POSIXct(lubridate::parse_date_time(input_futuro$Data_Base, c("ymd", "dmy", "mdy", "Ymd", "dmY")), tz="UTC")
+        )
+        
+        # Soma as horas à data base para ter o timestamp completo
+        datas_convertidas <- datas_base + lubridate::hours(as.numeric(input_futuro$Hora_Num))
+        velocidade_limpa <- as.numeric(input_futuro$Velocidade_Raw)
+        
+      } else {
+        # Cenário Antigo (Fallback): DataCompleta | Velocidade
+        if(!"Data" %in% names(input_futuro)) names(input_futuro)[1] <- "Data"
+        if(!"Velocidade" %in% names(input_futuro)) names(input_futuro)[2] <- "Velocidade"
+        
+        datas_convertidas <- tryCatch(
+          as.POSIXct(input_futuro$Data, tz="UTC"),
+          error = function(e) as.POSIXct(lubridate::parse_date_time(input_futuro$Data, c("ymd", "dmy", "mdy", "Ymd", "dmY")), tz="UTC")
+        )
+        velocidade_limpa <- as.numeric(input_futuro$Velocidade)
+      }
+      
+      # --- 2. Limpeza e Montagem do DataFrame ---
+      velocidade_limpa[velocidade_limpa < 0 | velocidade_limpa > 25] <- NA
+      
+      mean_v <- mean(velocidade_limpa, na.rm = TRUE)
+      if(is.na(mean_v)) mean_v <- 0
+      velocidade_limpa[is.na(velocidade_limpa)] <- mean_v
+      
+      df_proj <- data.frame(data = datas_convertidas, speed = velocidade_limpa) %>% 
+        dplyr::mutate(Hour = lubridate::hour(data)) %>%
+        dplyr::arrange(data)
+      
+      # --- 3. Correção dos Blocos (Mapeamento de Meses) ---
+      # Força o padrão de nomes de meses (jan, fev...) usado no sistema para evitar falha na busca
+      meses_treino_exemplo <- unique(treino$resultados_cluster$definicoes_clusters$Month)
+      mes_num_proj <- lubridate::month(df_proj$data)
+      
+      if(is.numeric(meses_treino_exemplo[1])) {
+        df_proj$Month <- mes_num_proj
+      } else {
+        # Padrão pt-br abreviado do fun_aux.R
+        meses_pt_sistema <- c('jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez')
+        df_proj$Month <- meses_pt_sistema[mes_num_proj]
+      }
+      
+      # --- 4. Classificação e Simulação ---
+      clusters_validos_kde <- unique(treino$modelos_kde$cluster)
+      defs <- treino$resultados_cluster$definicoes_clusters %>%
+        dplyr::filter(cluster %in% clusters_validos_kde)
+      
+      metod <- treino$metodo_atual
+      
+      df_proj$cluster <- purrr::pmap_dbl(
+        list(df_proj$speed, df_proj$Month, df_proj$Hour),
+        function(s, m, h) {
+          encontrar_cluster_para_velocidade(s, m, h, metod, defs)
+        }
+      )
+      
+      matriz_cenarios <- simular_potencia_kde(
+        dados_para_simular = df_proj,
+        tabela_modelos_kde = treino$modelos_kde,
+        tabela_definicoes_clusters = defs,
+        metodologia = treino$metodo_atual,
+        total_cenarios = input$num_cenarios
+      )
+      
+      # --- 5. Corte de Limites (Clamping) ---
+      max_potencia_treino <- max(treino$dados_originais$power, na.rm = TRUE)
+      if(is.infinite(max_potencia_treino)) max_potencia_treino <- 100000 
+      
+      matriz_cenarios[matriz_cenarios < 0] <- 0
+      matriz_cenarios[matriz_cenarios > max_potencia_treino] <- max_potencia_treino
+      
+      list(df_resultado = df_proj, matriz_cenarios = matriz_cenarios)
+    })
+    projection_plot <- reactive({
+      req(projection_raw())
+      raw <- projection_raw()
+      
+      media_cenarios <- rowMeans(raw$matriz_cenarios, na.rm = TRUE)
+      df_media <- data.frame(data = raw$df_resultado$data, value = media_cenarios, variable = "Mean", type = "Mean")
+      
+      df_cenarios <- as.data.frame(raw$matriz_cenarios)
+      df_cenarios$data <- raw$df_resultado$data
+      df_long <- tidyr::pivot_longer(df_cenarios, cols = -data, names_to = "variable", values_to = "value")
+      df_long$type <- "Scenario"
+      
+      dplyr::bind_rows(df_long, df_media) 
+    })
+    projectionSeriesServer("projection_module", projection_plot)
+  })
 }

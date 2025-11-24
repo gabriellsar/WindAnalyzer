@@ -78,8 +78,8 @@ elbowPlotServer <- function(id, dados_cluster_definicoes, metodologia_selecionad
         ggplot2::geom_line(color = "black") +
         ggplot2::geom_point(size = 2, color = "black") +
         
-        ggplot2::geom_point(data = base[num_cl, ], ggplot2::aes(k.values, wss_values), color = "#16a34a", size = 4) +
-        ggplot2::geom_vline(xintercept = num_cl, linetype = "dashed", color = "#16a34a") +
+        ggplot2::geom_point(data = base[num_cl, ], ggplot2::aes(k.values, wss_values), color = "#059669", size = 4) +
+        ggplot2::geom_vline(xintercept = num_cl, linetype = "dashed", color = "#059669") +
         
         ggplot2::labs(
           x = "Number of Cluster (k)",

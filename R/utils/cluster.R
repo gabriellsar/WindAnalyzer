@@ -1,5 +1,5 @@
 wss = function(k,aux){
-  a = kmeans(aux, k, nstart = 10, iter.max = 100)
+  a = kmeans(aux, k, nstart = 10, iter.max = 500)
   return(a)
 }
 
@@ -31,9 +31,9 @@ clusterizacao = function(temp){
     n_cluster=n_cluster-1
   }
   
-  cl = kmeans(temp$speed, n_cluster,iter.max = 100)
+  cl = kmeans(temp$speed, n_cluster,iter.max = 500)
   while (min(cl$size) < 4) {
-    cl = kmeans(temp$speed, n_cluster,iter.max = 100)
+    cl = kmeans(temp$speed, n_cluster,iter.max = 500)
   }
   Vet_cluster = cl$cluster
   Vet_speed = cl$centers

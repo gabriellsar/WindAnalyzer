@@ -2,10 +2,10 @@ library(shiny)
 library(leaflet) 
 library(shinyjs)
 library(feather)
-library(ggplot2)   
+# library(ggplot2)            
 library(tibble)
-library(dplyr)
-library(tidyr)
+library(dplyr)       
+library(tidyr)              
 library(purrr)
 library(plotly)
 
@@ -36,7 +36,7 @@ ui <- fluidPage(
   tags$script(src = "particles.js"),
   tags$script(src = "mapcontainer.js"),          
    
-  tags$head(
+  tags$head(    
     tags$meta(charset = "UTF-8"),
     tags$meta(name = "viewport", content = "width=device-width, initial-scale=1.0"),
     tags$title("WindAnalyzer - Wind Energy Analysis"),
