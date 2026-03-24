@@ -4,7 +4,7 @@ library(shinyjs)
 library(feather)
 # library(ggplot2)            
 library(tibble)
-library(dplyr)       
+library(dplyr)        
 library(tidyr)              
 library(purrr)
 library(plotly)
@@ -20,7 +20,7 @@ tokens <- list(
 lonlat <- as.data.frame(read_feather("lonlat_modificado.feather"))
 load("Base_estacoes.RData")
 load("Base_Dados_Estacoes.RData")
-
+ 
 
 module_files <- list.files("R/modules", pattern = "\\.R$", full.names = TRUE)
 sapply(module_files, source) 
@@ -33,7 +33,6 @@ sapply(component_files, source)
            
 ui <- fluidPage(     
   lang = "en",
-  tags$script(src = "particles.js"),
   tags$script(src = "mapcontainer.js"),          
    
   tags$head(    
@@ -50,7 +49,7 @@ ui <- fluidPage(
       .nav-tabs {
         display: none;
       }
-    "))
+    "))  
   ),
   
   navBarUI("nav_bar"),

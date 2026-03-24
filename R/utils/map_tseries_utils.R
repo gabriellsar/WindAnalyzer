@@ -51,7 +51,7 @@ perform_bias_correction <- function(correction_type, inmet_station_info, inmet_t
   
   merra2_filename <- paste0(merra2_coords_for_inmet$lon, "_", merra2_coords_for_inmet$lat, ".feather")
   merra2_raw_data_for_inmet <- read_feather_dropbox_httr(
-    paste0("/Wind Analyzer/", merra2_filename), 
+    paste0("/WindAnalyzer/", merra2_filename), 
     tokens$refresh, tokens$client_id, tokens$client_secret
   )
   
@@ -114,7 +114,7 @@ generate_wind_speed_series <- function(target_merra_lat, target_merra_lon, time_
   
   merra2_filename <- paste0(target_merra_lon, "_", target_merra_lat, ".feather")
   merra2_raw_data <- read_feather_dropbox_httr(
-    paste0("/Wind Analyzer/", merra2_filename), 
+    paste0("/WindAnalyzer/", merra2_filename), 
     tokens$refresh, tokens$client_id, tokens$client_secret
   )
   
