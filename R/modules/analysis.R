@@ -397,15 +397,20 @@ analysisServer <- function(id, lonlat_data, estacoes_data, dados_estacoes_data, 
       req(projection_raw())
       raw <- projection_raw()
       
+      # Cálculos vetorizados diretos na matriz (muito mais rápidos e econômicos em RAM)
       media_cenarios <- rowMeans(raw$matriz_cenarios, na.rm = TRUE)
-      df_media <- data.frame(data = raw$df_resultado$data, value = media_cenarios, variable = "Mean", type = "Mean")
+      p05 <- apply(raw$matriz_cenarios, 1, stats::quantile, probs = 0.05, na.rm = TRUE)
+      p95 <- apply(raw$matriz_cenarios, 1, stats::quantile, probs = 0.95, na.rm = TRUE)
       
-      df_cenarios <- as.data.frame(raw$matriz_cenarios)
-      df_cenarios$data <- raw$df_resultado$data
-      df_long <- tidyr::pivot_longer(df_cenarios, cols = -data, names_to = "variable", values_to = "value")
-      df_long$type <- "Scenario"
+      # Retorna apenas um data.frame leve com a faixa de confiança e a média
+      df_resumo <- data.frame(
+        data = raw$df_resultado$data,
+        Mean = media_cenarios,
+        Lower = p05,
+        Upper = p95
+      )
       
-      dplyr::bind_rows(df_long, df_media) 
+      return(df_resumo)
     })
     projectionSeriesServer("projection_module", projection_plot)
   })

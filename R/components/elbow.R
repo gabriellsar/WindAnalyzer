@@ -1,12 +1,12 @@
-# Arquivo: R/components/elbow.R
-
 elbowPlotUI <- function(id) {
   ns <- NS(id)
-  
   tagList(
-    tags$h4("Elbow Method Chart"),
+    div(style = "display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;",
+        tags$h4("Elbow Method Chart"),
+        downloadButton(ns("download_elbow"), "Exportar Gráfico", class = "btn-sm")
+    ),
     shinycssloaders::withSpinner(
-      plotly::plotlyOutput(ns("elbowChart")),
+      plotOutput(ns("elbowChart"), height = "400px"),
       type = 4,
       color = "#286090"
     )
@@ -14,7 +14,6 @@ elbowPlotUI <- function(id) {
 }
 
 elbowPlotServer <- function(id, dados_cluster_definicoes, metodologia_selecionada, mes_selecionado, hora_selecionada) {
-  
   moduleServer(id, function(input, output, session) {
     
     dados_para_plotar <- reactive({
@@ -56,8 +55,7 @@ elbowPlotServer <- function(id, dados_cluster_definicoes, metodologia_selecionad
       list(dados_elbow = dados_elbow, n_cluster = n_cluster_otimo)
     })
     
-    output$elbowChart <- plotly::renderPlotly({
-      
+    plot_obj <- reactive({
       info_plot <- dados_para_plotar()
       req(info_plot)
       
@@ -69,26 +67,27 @@ elbowPlotServer <- function(id, dados_cluster_definicoes, metodologia_selecionad
                           "Monthly" = paste("para o Mês de", mes_selecionado()),
                           "Hourly" = paste("para a Hora", hora_selecionada()),
                           "Monthly and Hourly" = paste("para", mes_selecionado(), "- Hora", hora_selecionada()),
-                          "" 
-      )
-      
+                          "" )
       titulo_completo <- paste(titulo_base, subtitulo)
       
-      p <- ggplot2::ggplot(data = base, ggplot2::aes(k.values, wss_values)) +
+      ggplot2::ggplot(data = base, ggplot2::aes(k.values, wss_values)) +
         ggplot2::geom_line(color = "black") +
         ggplot2::geom_point(size = 2, color = "black") +
-        
         ggplot2::geom_point(data = base[num_cl, ], ggplot2::aes(k.values, wss_values), color = "#059669", size = 4) +
         ggplot2::geom_vline(xintercept = num_cl, linetype = "dashed", color = "#059669") +
-        
         ggplot2::labs(
+          title = titulo_completo,
           x = "Number of Cluster (k)",
           y = "Within-Cluster Sum of Squares (WSS)"
         ) +
         ggplot2::theme_minimal()
-      
-      plotly::ggplotly(p)
     })
     
+    output$elbowChart <- renderPlot({ plot_obj() }, res = 96)
+    
+    output$download_elbow <- downloadHandler(
+      filename = function() { paste0("metodo_cotovelo_", Sys.Date(), ".png") },
+      content = function(file) { ggplot2::ggsave(file, plot = plot_obj(), width = 8, height = 6, dpi = 300) }
+    )
   })
 }

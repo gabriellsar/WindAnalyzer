@@ -43,13 +43,16 @@ clusterizacao = function(temp){
     x1 = temp$speed,
     x2 = temp$power)
   
-  dados_EM_divisao = list()
-  min_speed = max_speed = NULL
-  for(i in 1:n_cluster){
-    dados_EM_divisao = c(dados_EM_divisao,
-                         list(temp$power[which(cl$cluster == i)]))
-    min_speed[i] = min(temp$speed[which(cl$cluster == i)])
-    max_speed[i] = max(temp$speed[which(cl$cluster == i)])
+  dados_EM_divisao <- vector("list", n_cluster)
+  min_speed <- numeric(n_cluster)
+  max_speed <- numeric(n_cluster)
+  
+  for(i in 1:n_cluster) {
+    idx_cluster <- which(cl$cluster == i)
+    
+    dados_EM_divisao[[i]] <- temp$power[idx_cluster]
+    min_speed[i] <- min(temp$speed[idx_cluster])
+    max_speed[i] <- max(temp$speed[idx_cluster])
   }
   
   Saida = list(CL=Vet_cluster, Min_S=min_speed, Max_S=max_speed, value_S=Vet_speed, ind_cotovelo = df)

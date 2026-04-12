@@ -10,49 +10,40 @@ projectionSeriesUI <- function(id) {
   )
 }
 
-projectionSeriesServer <- function(id, dados_projecao_long) {
+projectionSeriesServer <- function(id, dados_projecao) {
   moduleServer(id, function(input, output, session) {
     
     output$projectionChart <- plotly::renderPlotly({
-      df <- dados_projecao_long()
+      df <- dados_projecao() # Recebe o data.frame consolidado do passo anterior
       req(df)
-      df$type <- factor(df$type, levels = c("Scenario", "Mean"))
-      df <- df[order(df$type), ] 
-      p <- ggplot2::ggplot(df, ggplot2::aes(
-        x = data, 
-        y = value, 
-        group = variable, 
-        color = type,
-        alpha = type,
-        linewidth = type
-      )) +
-        ggplot2::geom_line() +
-        ggplot2::scale_color_manual(values = c("Scenario" = "gray70", "Mean" = "black")) +
-        ggplot2::scale_alpha_manual(values = c("Scenario" = 0.3, "Mean" = 1)) +
-        ggplot2::scale_linewidth_manual(values = c("Scenario" = 0.5, "Mean" = 1.2)) +
-        ggplot2::labs(
-          x = "Time",
-          y = "Power (kW)",
-          title = "Simulated Scenarios vs. Mean Estimate"
-        ) +
-        ggplot2::theme_minimal() +
-        ggplot2::theme(legend.position = "none")
       
-      gg <- plotly::ggplotly(p, tooltip = c("x", "y", "type"))
+      p <- plotly::plot_ly(data = df, x = ~data) %>%
+        # Adiciona a "nuvem" dos cenários estocásticos
+        plotly::add_ribbons(
+          ymin = ~Lower, ymax = ~Upper,
+          name = 'Intervalo 90% (Cenários)',
+          fillcolor = 'rgba(169, 169, 169, 0.3)',
+          line = list(color = 'transparent'),
+          hoverinfo = "skip"
+        ) %>%
+        # Adiciona a linha da Média
+        plotly::add_lines(
+          y = ~Mean,
+          name = 'Média',
+          line = list(color = 'black', width = 2),
+          hoverinfo = "text",
+          text = ~paste("Data:", data, "<br>Média:", round(Mean, 2), "kW")
+        ) %>%
+        plotly::layout(
+          xaxis = list(title = "Time"),
+          yaxis = list(title = "Power (kW)"),
+          title = "Simulated Scenarios vs. Mean Estimate",
+          showlegend = TRUE,
+          legend = list(orientation = "h", x = 0.5, xanchor = "center", y = -0.2)
+        ) %>%
+        plotly::config(displaylogo = FALSE, modeBarButtons = list(list("toImage")))
       
-      gg$x$data <- lapply(gg$x$data, function(trace) {
-      if (isTRUE(grepl("Scenario", trace$name)) || isTRUE(grepl("Scenario", trace$legendgroup))) {
-        trace$hoverinfo <- "skip" 
-        } else {
-          trace$hoverinfo <- "text" 
-        }
-        return(trace)
-      })
-      
-      gg <- plotly::config(gg, 
-                           displaylogo = FALSE,
-                           modeBarButtons = list(list("toImage")))
-      return(gg)
+      return(p)
     })
   })
 }

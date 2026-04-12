@@ -1,9 +1,9 @@
 library(shiny)                 
 library(leaflet) 
-library(shinyjs)
+library(shinyjs)  
 library(feather)
 # library(ggplot2)            
-library(tibble)
+library(tibble) 
 library(dplyr)        
 library(tidyr)              
 library(purrr)
@@ -14,8 +14,8 @@ source("config_token.R")
 tokens <- list(   
   refresh = refresh_token,
   client_id = client_id,                        
-  client_secret = client_secret
-)
+  client_secret = client_secret 
+) 
 
 lonlat <- as.data.frame(read_feather("lonlat_modificado.feather"))
 load("Base_estacoes.RData")
@@ -49,10 +49,10 @@ ui <- fluidPage(
       .nav-tabs {
         display: none;
       }
-    "))  
+    "))   
   ),
   
-  navBarUI("nav_bar"),
+  navBarUI("nav_bar"),  
                                          
   tabsetPanel(
     id = "main_tabs",  
@@ -62,7 +62,7 @@ ui <- fluidPage(
       heroSectionUI("hero"),
       cardsSectionUI("cards"),
       tags$div(class = "wind-particles"),  
-    ),
+    ), 
     
     tabPanel("Analysis", value = "analysis_tab",         
       analysisUI(id = "analysis")   
