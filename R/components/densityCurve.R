@@ -11,15 +11,16 @@ densityPlotUI <- function(id) {
                     tags$div(class = "toggle-group",
                              tags$span("View Type:", class = "control-label"),
                              radioButtons(ns("plot_type"), label = NULL,
-                                          choices = c("Overlay" = "overlay", "Grid" = "facet"),
+                                          choices = c("Single" = "single", "Grid" = "facet"),
                                           selected = "facet", inline = TRUE)
                     ),
                     
                     conditionalPanel(
-                      condition = "input.plot_type == 'overlay'", ns = ns,
-                      tags$div(class = "pagination-group",
+                      condition = "input.plot_type == 'single'", ns = ns,
+                      tags$div(class = "pagination-group", style = "display: flex; align-items: center; gap: 8px;",
                                tags$span("Cluster:", class = "control-label"),
-                               numericInput(ns("page_num"), label = NULL, value = 1, min = 1, step = 1, width = "65px")
+                               numericInput(ns("page_num"), label = NULL, value = 1, min = 1, step = 1, width = "65px"),
+                               uiOutput(ns("warning_msg"), inline = TRUE)
                       )
                     )
            ),
@@ -36,21 +37,45 @@ densityPlotUI <- function(id) {
 densityPlotServer <- function(id, dados_para_plotar) {
   moduleServer(id, function(input, output, session) {
     
+    total_clusters_reativo <- reactive({
+      plot_data <- dados_para_plotar()
+      req(plot_data)
+      length(levels(plot_data$cluster))
+    })
+    
+    observe({
+      req(total_clusters_reativo())
+      updateNumericInput(session, "page_num", max = total_clusters_reativo())
+    })
+    
+    output$warning_msg <- renderUI({
+      req(!is.null(input$page_num), !is.na(input$page_num)) 
+      
+      tot <- total_clusters_reativo()
+      
+      if (input$page_num < 1 || input$page_num > tot) {
+        tags$span(
+          style = "color: #dc2626; font-size: 0.85rem; display: inline-flex; align-items: center; gap: 4px; font-weight: 500;",
+          shiny::icon("exclamation-triangle"),
+          paste0("Out of bounds (Max: ", tot, ")")
+        )
+      } else {
+        NULL 
+      }
+    })
+    
     dados_paginados <- reactive({
       plot_data <- dados_para_plotar()
       req(plot_data)
-      clusters_por_pagina <- 1
       
       cluster_levels <- levels(plot_data$cluster)
       total_clusters <- length(cluster_levels)
-      total_paginas <- ceiling(total_clusters / clusters_por_pagina)
       
-      req(input$page_num > 0, input$page_num <= total_paginas)
-      start_index <- (input$page_num - 1) * clusters_por_pagina + 1
-      end_index <- min(input$page_num * clusters_por_pagina, total_clusters)
+      req(is.numeric(input$page_num), input$page_num >= 1, input$page_num <= total_clusters)
       
-      clusters_na_pagina <- cluster_levels[start_index:end_index]
-      plot_data %>% dplyr::filter(cluster %in% clusters_na_pagina)
+      cluster_selecionado <- cluster_levels[input$page_num]
+      
+      plot_data %>% dplyr::filter(cluster == cluster_selecionado)
     })
     
     plot_obj <- reactive({
@@ -63,9 +88,18 @@ densityPlotServer <- function(id, dados_para_plotar) {
           ggplot2::theme_minimal() +
           ggplot2::theme(legend.position = "none")
       } else {
+        req(nrow(dados_paginados()) > 0) 
+        
+        cluster_atual <- unique(dados_paginados()$cluster)
+        
         ggplot2::ggplot(dados_paginados(), ggplot2::aes(x = power, fill = cluster, color = cluster)) +
           ggplot2::geom_density(alpha = 0.5) +
-          ggplot2::labs(x = "Power (kW)", y = "Density", fill = "Cluster", color = "Cluster") +
+          ggplot2::labs(
+            x = "Power (kW)", 
+            y = "Density", 
+            fill = "Cluster", 
+            color = "Cluster"
+          ) +
           ggplot2::theme_minimal() +
           ggplot2::theme(legend.position = "bottom")
       }

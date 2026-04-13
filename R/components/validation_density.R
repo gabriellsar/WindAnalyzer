@@ -29,8 +29,8 @@ validationDensityServer <- function(id, dados_comparacao) {
           color = "Source",
           fill = "Source"
         ) +
-        ggplot2::scale_color_manual(values = c("Historical" = "#3b82f6", "Estimated" = "black")) +
-        ggplot2::scale_fill_manual(values = c("Historical" = "#3b82f6", "Estimated" = "black")) +
+        ggplot2::scale_color_manual(values = c("Historical" = "#059669", "Estimated" = "black")) +
+        ggplot2::scale_fill_manual(values = c("Historical" = "#059669", "Estimated" = "black")) +
         ggplot2::theme_minimal() +
         ggplot2::theme(legend.position = "bottom")
     })

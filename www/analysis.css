@@ -283,7 +283,6 @@ body {
     align-items: center;
     background-color: #f0fdf4;
     border: 1px solid var(--primary-color);
-    animation: slideIn 0.3s ease-out;
 }
 
 .file-input-wrapper.loaded i {
@@ -298,12 +297,7 @@ body {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-}
-
-@keyframes slideIn {
-    from { opacity: 0; transform: translateY(5px); }
-    to { opacity: 1; transform: translateY(0); }
-}
+}s
 
 .chart-card {
   padding: 20px;
