@@ -1,17 +1,16 @@
 validationScatterUI <- function(id) {
   ns <- NS(id)
-  tagList(
-    div(style = "display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;",
-        tags$h4("Validation: Historical vs. Estimated Power"),
-        # Botão de exportação em alta resolução
-        downloadButton(ns("download_val_scatter"), "Exportar Gráfico", class = "btn-sm")
-    ),
-    shinycssloaders::withSpinner(
-      # Mudança de plotlyOutput para plotOutput
-      plotOutput(ns("validationScatter"), height = "400px"),
-      type = 4,
-      color = "#286090"
-    )
+  tags$div(class = "chart-card",
+           tags$div(class = "chart-header",
+                    tags$h4("Validation: Historical vs. Estimated Power", class = "chart-title"),
+                    downloadButton(ns("download_val_scatter"), "Export", class = "btn-download")
+           ),
+           tags$div(class = "chart-body",
+                    shinycssloaders::withSpinner(
+                      plotOutput(ns("validationScatter"), height = "400px"),
+                      type = 4, color = "#16a34a"
+                    )
+           )
   )
 }
 

@@ -1,45 +1,54 @@
 densityPlotUI <- function(id) {
   ns <- NS(id)
-  tagList(
-    div(style = "display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;",
-        tags$h4("Power Density Graph by Cluster", style = "margin-top:10px; margin-bottom:0;"),
-        downloadButton(ns("download_density"), "Exportar Gráfico", class = "btn-sm")
-    ),
-    
-    div(style = "display: flex; align-items: center; gap: 30px; margin-bottom: 10px;",
-        radioButtons(ns("plot_type"), "Tipo de Visualização:",
-                     choices = c("Sobreposto" = "overlay", "Grade" = "facet"),
-                     selected = "facet", inline = TRUE),
-        
-        conditionalPanel(
-          condition = "input.plot_type == 'overlay'", ns = ns,
-          div(style = "display: flex; align-items: center; gap: 10px;",
-              tags$b("Página:"),
-              numericInput(ns("page_num"), label = NULL, value = 1, min = 1, step = 1, width = "80px")
-          )
-        )
-    ),
-    
-    shinycssloaders::withSpinner(
-      plotOutput(ns("densityChart"), height = "400px"),
-      type = 4,
-      color = "#286090"
-    )
+  tags$div(class = "chart-card",
+           tags$div(class = "chart-header",
+                    tags$h4("Power Density Graph by Cluster", class = "chart-title"),
+                    downloadButton(ns("download_density"), "Export", class = "btn-download")
+           ),
+           
+           tags$div(class = "chart-controls",
+                    
+                    tags$div(class = "toggle-group",
+                             tags$span("View Type:", class = "control-label"),
+                             radioButtons(ns("plot_type"), label = NULL,
+                                          choices = c("Overlay" = "overlay", "Grid" = "facet"),
+                                          selected = "facet", inline = TRUE)
+                    ),
+                    
+                    conditionalPanel(
+                      condition = "input.plot_type == 'overlay'", ns = ns,
+                      tags$div(class = "pagination-group",
+                               tags$span("Cluster:", class = "control-label"),
+                               numericInput(ns("page_num"), label = NULL, value = 1, min = 1, step = 1, width = "65px")
+                      )
+                    )
+           ),
+           
+           tags$div(class = "chart-body",
+                    shinycssloaders::withSpinner(
+                      plotOutput(ns("densityChart"), height = "400px"),
+                      type = 4, color = "#16a34a"
+                    )
+           )
   )
 }
 
 densityPlotServer <- function(id, dados_para_plotar) {
   moduleServer(id, function(input, output, session) {
+    
     dados_paginados <- reactive({
       plot_data <- dados_para_plotar()
       req(plot_data)
-      clusters_por_pagina <- 3
+      clusters_por_pagina <- 1
+      
       cluster_levels <- levels(plot_data$cluster)
       total_clusters <- length(cluster_levels)
       total_paginas <- ceiling(total_clusters / clusters_por_pagina)
+      
       req(input$page_num > 0, input$page_num <= total_paginas)
       start_index <- (input$page_num - 1) * clusters_por_pagina + 1
       end_index <- min(input$page_num * clusters_por_pagina, total_clusters)
+      
       clusters_na_pagina <- cluster_levels[start_index:end_index]
       plot_data %>% dplyr::filter(cluster %in% clusters_na_pagina)
     })

@@ -14,7 +14,7 @@ tokens <- list(
   refresh = refresh_token,
   client_id = client_id,                        
   client_secret = client_secret 
-) 
+)   
 
 lonlat <- as.data.frame(read_feather("lonlat_modificado.feather"))
 load("Base_estacoes.RData")
@@ -51,8 +51,8 @@ ui <- fluidPage(
     "))   
   ),
   
-  navBarUI("nav_bar"),       
-                                         
+  navBarUI("nav_bar"),                      
+                                            
   tabsetPanel(
     id = "main_tabs",  
     type = "hidden", 

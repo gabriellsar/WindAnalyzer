@@ -34,15 +34,18 @@ analysisUI <- function(id) {
         
           div(class = "plot-grid",
             div(class = "analysis-card",
-              div(class = "plot-filters",
-                div(id = ns("month_filter_panel"), style = "display: none;",
-                  selectInput(ns("mes_selecionado"), "Selecione o Mês:",
-                    choices = month.name, selected = month.name[1])
+                div(id = ns("filter_panel"), class = "filter-toolbar", style = "display: none;",
+                    div(id = ns("month_filter_panel"), class = "filter-item", style = "display: none;",
+                        tags$span("Month:", class = "control-label"),
+                        selectInput(ns("mes_selecionado"), label = NULL,
+                                    choices = month.name, selected = month.name[1], width = "160px")
+                    ),
+                    div(id = ns("hour_filter_panel"), class = "filter-item", style = "display: none;",
+                        tags$span("Hour:", class = "control-label"),
+                        sliderInput(ns("hora_selecionada"), label = NULL,
+                                    min = 0, max = 23, value = 0, step = 1, width = "250px")
+                    )
                 ),
-                div(id = ns("hour_filter_panel"), style = "display: none;",
-                  sliderInput(ns("hora_selecionada"), "Selecione a Hora:",
-                                min = 0, max = 23, value = 0, step = 1, width = "100%")
-                )),
               
                 hr(),
                 fluidRow(
@@ -55,27 +58,42 @@ analysisUI <- function(id) {
         ),
         
         div(class = "analysis-card",
-          tags$h4("Model Validation (In-Sample)", style = "color: #286090; margin-bottom: 20px; border-bottom: 1px solid #eee; padding-bottom: 10px;"),
+          tags$h4("Model Validation (In-Sample)", 
+                  style = "font-size: 0.9rem; color: var(--text-color-light); margin-bottom: 15px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;"),
           fluidRow(
             column(6, validationScatterUI(ns("val_scatter_module"))),
             column(6, validationDensityUI(ns("val_density_module")))
           )
         ),
         div(class = "analysis-card",
-        tags$h4("Future Projection", style = "color: #286090; border-bottom: 1px solid #eee; padding-bottom: 10px; margin-bottom: 20px;"),
-        
-        fluidRow(
-          column(4,
-            tags$div(class = "upload-wrapper",
-              uiOutput(ns("projection_file_ui"))),
-           tags$hr(),
-           numericInput(ns("num_cenarios"), "Number of Scenarios:", value = 100, min = 10, max = 1000),
-           actionButton(ns("run_projection"), "Generate Projection", class = "btn-success", style="width:100%; margin-top:10px;", icon = icon("chart-line"))
-          ),
-          column(8, projectionSeriesUI(ns("projection_module"))
-          )
+            tags$h4("Future Projection", 
+                    style = "font-size: 0.9rem; color: var(--text-color-light); margin-bottom: 15px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;"),
+            
+            # A classe flex-row-stretch garante que ambas as colunas tenham a mesma altura
+            fluidRow(class = "flex-row-stretch",
+                     column(4,
+                            div(class = "side-panel-controls",
+                                # Módulo de Upload já customizado
+                                uiOutput(ns("projection_file_ui")),
+                                
+                                tags$hr(style = "margin: 15px 0 20px 0; border-color: var(--card-border-color);"),
+                                
+                                # Input Numérico Moderno
+                                div(class = "modern-input-group",
+                                    tags$span("NUMBER OF SCENARIOS:", class = "control-label"),
+                                    numericInput(ns("num_cenarios"), label = NULL, value = 100, min = 10, max = 1000, width = "100%")
+                                ),
+                                
+                                # Reutilizamos o botão gigante de CTA para dar destaque
+                                actionButton(ns("run_projection"), "Generate Projection", class = "btn-run-analysis", style = "margin-top: auto;", icon = icon("bolt"))
+                            )
+                     ),
+                     
+                     column(8, 
+                            projectionSeriesUI(ns("projection_module"))
+                     )
+            )
         )
-      )
     )
   )
 )}
@@ -138,12 +156,15 @@ analysisServer <- function(id, lonlat_data, estacoes_data, dados_estacoes_data, 
     })
     observe({
       method <- selected_methodology()
+      
+      
       is_monthly <- method %in% c("Monthly", "Monthly and Hourly")
       is_hourly <- method %in% c("Hourly", "Monthly and Hourly")
+      show_toolbar <- is_monthly || is_hourly
       
+      shinyjs::toggleElement(id = "filter_panel", condition = show_toolbar)
       shinyjs::toggleElement(id = "month_filter_panel", condition = is_monthly)
       shinyjs::toggleElement(id = "hour_filter_panel", condition = is_hourly)
-      shinyjs::toggleElement(id = "filters_hr", condition = is_monthly || is_hourly)
     })
     
     # 3. Processamento da Metodologia
@@ -270,7 +291,7 @@ analysisServer <- function(id, lonlat_data, estacoes_data, dados_estacoes_data, 
         }
       )
       validate(
-        need(nrow(dados_filtrados) > 0, "Não existem dados para o grupo selecionado.")
+        need(nrow(dados_filtrados) > 0, "There is no data for the selected group.")
       )
       
       indices_filtrados <- dados_filtrados$..original_row_index..
@@ -303,7 +324,7 @@ analysisServer <- function(id, lonlat_data, estacoes_data, dados_estacoes_data, 
       treino <- analysis_results()
       input_futuro <- rv_files$projection_speed_file$data
       
-      showNotification("Processando arquivo de projeção...", type = "message")
+      showNotification("Processing projection file...", type = "message")
       tem_tres_colunas <- ncol(input_futuro) >= 3
       
       if (tem_tres_colunas) {

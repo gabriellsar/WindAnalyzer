@@ -1,15 +1,16 @@
 scatterplotUI <- function(id) {
   ns <- NS(id)
-  tagList(
-    div(style = "display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;",
-        tags$h4("Cluster Distribution (Wind Speed vs. Power)"),
-        downloadButton(ns("download_scatter_cluster"), "Exportar Gráfico", class = "btn-sm")
-    ),
-    shinycssloaders::withSpinner(
-      plotOutput(ns("cluster_scatterplot"), height = "400px"),
-      type = 4,
-      color = "#286090"
-    )
+  tags$div(class = "chart-card",
+           tags$div(class = "chart-header",
+                    tags$h4("Cluster Distribution (Wind Speed vs. Power)", class = "chart-title"),
+                    downloadButton(ns("download_scatter_cluster"), "Export", class = "btn-download")
+           ),
+           tags$div(class = "chart-body",
+                    shinycssloaders::withSpinner(
+                      plotOutput(ns("cluster_scatterplot"), height = "400px"),
+                      type = 4, color = "#16a34a"
+                    )
+           )
   )
 }
 

@@ -1,15 +1,16 @@
 validationDensityUI <- function(id) {
   ns <- NS(id)
-  tagList(
-    div(style = "display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;",
-        tags$h4("Density Distribution Comparison"),
-        downloadButton(ns("download_val_density"), "Exportar Gráfico", class = "btn-sm")
-    ),
-    shinycssloaders::withSpinner(
-      plotOutput(ns("validationDensity"), height = "400px"),
-      type = 4,
-      color = "#286090"
-    )
+  tags$div(class = "chart-card",
+           tags$div(class = "chart-header",
+                    tags$h4("Density Distribution Comparison", class = "chart-title"),
+                    downloadButton(ns("download_val_density"), "Export", class = "btn-download")
+           ),
+           tags$div(class = "chart-body",
+                    shinycssloaders::withSpinner(
+                      plotOutput(ns("validationDensity"), height = "400px"),
+                      type = 4, color = "#16a34a"
+                    )
+           )
   )
 }
 
@@ -21,7 +22,6 @@ validationDensityServer <- function(id, dados_comparacao) {
       req(df)
       
       ggplot2::ggplot(df, ggplot2::aes(x = power, color = origin, fill = origin)) +
-        # Uso do alpha no fill para preenchimento transparente, fica muito mais estético
         ggplot2::geom_density(linewidth = 1, alpha = 0.2) + 
         ggplot2::labs(
           x = "Power (kW)", 
