@@ -17,16 +17,20 @@ analysisUI <- function(id) {
         ),
       ),
       div(class = "analysis-container",
-        div(class = "analysis-card",
-          div(class = "method-btn-group",
-            actionButton(ns("btn_single"), label = "Single Period", icon = icon("circle"), class = "method-btn active"),
-            actionButton(ns("btn_monthly"), label = "Monthly", icon = icon("calendar-alt"), class = "method-btn"),
-            actionButton(ns("btn_hourly"), label = "Hourly", icon = icon("clock"), class = "method-btn"),
-            actionButton(ns("btn_monthly_hourly"), label = "Monthly & Hourly", icon = icon("calendar-check"), class = "method-btn")
+          div(class = "analysis-card",
+              tags$h4("1. Select Methodology", style = "font-size: 1rem; color: #64748b; margin-bottom: 15px; font-weight: 600;"),
+              
+              div(class = "segmented-control",
+                  actionButton(ns("btn_single"), label = "Single Period", icon = icon("circle"), class = "segment-btn active"),
+                  actionButton(ns("btn_monthly"), label = "Monthly", icon = icon("calendar-alt"), class = "segment-btn"),
+                  actionButton(ns("btn_hourly"), label = "Hourly", icon = icon("clock"), class = "segment-btn"),
+                  actionButton(ns("btn_monthly_hourly"), label = "Monthly & Hourly", icon = icon("calendar-check"), class = "segment-btn")
+              ),
+              
+              div(style = "margin-top: 25px;",
+                  actionButton(ns("run_analysis"), "Apply Methodology", class = "btn-run-analysis", icon = icon("play"))
+              )
           ),
-          div(style = "margin-top: 20px;",
-            actionButton(ns("run_analysis"), "Apply Methodology", class = "btn-success", icon = icon("play"))
-          )),
         
           div(class = "plot-grid",
             div(class = "analysis-card",
@@ -300,34 +304,23 @@ analysisServer <- function(id, lonlat_data, estacoes_data, dados_estacoes_data, 
       input_futuro <- rv_files$projection_speed_file$data
       
       showNotification("Processando arquivo de projeção...", type = "message")
-      
-      # --- 1. Detecção Inteligente de Colunas ---
-      # O arquivo enviado tem 3 colunas: Date, Hour, Speed.
-      # Vamos verificar se estamos nesse cenário ou no antigo (2 colunas).
-      
       tem_tres_colunas <- ncol(input_futuro) >= 3
       
       if (tem_tres_colunas) {
-        # Cenário Novo: Date | Hour | Speed
-        # Assume que a col 1 é Data, col 2 é Hora, col 3 é Velocidade
         nomes_cols <- names(input_futuro)
-        # Renomeia temporariamente para facilitar
         names(input_futuro)[1] <- "Data_Base"
         names(input_futuro)[2] <- "Hora_Num"
         names(input_futuro)[3] <- "Velocidade_Raw"
         
-        # Converte a data base
         datas_base <- tryCatch(
           as.POSIXct(input_futuro$Data_Base, tz="UTC"),
           error = function(e) as.POSIXct(lubridate::parse_date_time(input_futuro$Data_Base, c("ymd", "dmy", "mdy", "Ymd", "dmY")), tz="UTC")
         )
         
-        # Soma as horas à data base para ter o timestamp completo
         datas_convertidas <- datas_base + lubridate::hours(as.numeric(input_futuro$Hora_Num))
         velocidade_limpa <- as.numeric(input_futuro$Velocidade_Raw)
         
       } else {
-        # Cenário Antigo (Fallback): DataCompleta | Velocidade
         if(!"Data" %in% names(input_futuro)) names(input_futuro)[1] <- "Data"
         if(!"Velocidade" %in% names(input_futuro)) names(input_futuro)[2] <- "Velocidade"
         
@@ -350,14 +343,12 @@ analysisServer <- function(id, lonlat_data, estacoes_data, dados_estacoes_data, 
         dplyr::arrange(data)
       
       # --- 3. Correção dos Blocos (Mapeamento de Meses) ---
-      # Força o padrão de nomes de meses (jan, fev...) usado no sistema para evitar falha na busca
       meses_treino_exemplo <- unique(treino$resultados_cluster$definicoes_clusters$Month)
       mes_num_proj <- lubridate::month(df_proj$data)
       
       if(is.numeric(meses_treino_exemplo[1])) {
         df_proj$Month <- mes_num_proj
-      } else {
-        # Padrão pt-br abreviado do fun_aux.R
+      } else { 
         meses_pt_sistema <- c('jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez')
         df_proj$Month <- meses_pt_sistema[mes_num_proj]
       }

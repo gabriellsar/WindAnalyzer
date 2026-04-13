@@ -13,25 +13,17 @@
 #' @return Um dataframe combinado e estruturado, pronto para a modelagem.
 
 combinar_dados_potencia_velocidade <- function(dados_potencia_brutos, dados_velocidade_brutos) {
-  
-  # Padroniza nomes
   colnames(dados_potencia_brutos) <- c("Data", "Hora", "Potencia")
   colnames(dados_velocidade_brutos) <- c("Data", "Hora", "Velocidade")
-  
-  # --- CORREÇÃO: Forçar conversão para numérico ---
-  # Função auxiliar para limpar e converter
+
   to_numeric_safe <- function(x) {
     if(is.numeric(x)) return(x)
-    # Substitui vírgula por ponto e converte
     as.numeric(gsub(",", ".", as.character(x)))
   }
   
   dados_potencia_brutos$Potencia <- to_numeric_safe(dados_potencia_brutos$Potencia)
   dados_velocidade_brutos$Velocidade <- to_numeric_safe(dados_velocidade_brutos$Velocidade)
-  # -----------------------------------------------
-  
-  # Cria Timestamp (Assume formato YYYY-MM-DD ou DD/MM/YYYY - tenta converter)
-  # Se Data já for Date/POSIXct, mantém. Se for char, converte.
+ 
   if(!lubridate::is.POSIXct(dados_potencia_brutos$Data) && !lubridate::is.Date(dados_potencia_brutos$Data)){
     dados_potencia_brutos$Data <- as.Date(parse_date_time(dados_potencia_brutos$Data, orders = c("ymd", "dmy", "mdy")))
   }
@@ -45,7 +37,6 @@ combinar_dados_potencia_velocidade <- function(dados_potencia_brutos, dados_velo
   dados_velocidade_brutos$Timestamp <- as.POSIXct(paste(dados_velocidade_brutos$Data, dados_velocidade_brutos$Hora, sep = " "),
                                                   format = "%Y-%m-%d %H", tz = "UTC")
   
-  # Remove NAs gerados por conversão antes do join
   dados_potencia_brutos <- na.omit(dados_potencia_brutos)
   dados_velocidade_brutos <- na.omit(dados_velocidade_brutos)
   
@@ -56,8 +47,9 @@ combinar_dados_potencia_velocidade <- function(dados_potencia_brutos, dados_velo
   )
   
   ordem_meses <- c('jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez')
-  dados_combinados$Month <- factor(format(dados_combinados$Timestamp, "%b"), levels = ordem_meses)
+  meses_numericos <- lubridate::month(dados_combinados$Timestamp)
   
+  dados_combinados$Month <- factor(ordem_meses[meses_numericos], levels = ordem_meses)
   dados_combinados$Estimado <- NA
   
   dados_finais <- dados_combinados %>%

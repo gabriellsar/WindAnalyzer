@@ -2,16 +2,15 @@ library(shiny)
 library(leaflet) 
 library(shinyjs)  
 library(feather)
-# library(ggplot2)            
 library(tibble) 
 library(dplyr)        
 library(tidyr)              
-library(purrr)
-library(plotly)
-
+library(purrr)   
+library(plotly) 
+ 
 source("config_token.R")    
 
-tokens <- list(   
+tokens <- list(
   refresh = refresh_token,
   client_id = client_id,                        
   client_secret = client_secret 
@@ -31,7 +30,7 @@ sapply(component_files, source)
 component_files <- list.files("R/utils", pattern = "\\.R$", full.names = TRUE)   
 sapply(component_files, source) 
            
-ui <- fluidPage(     
+ui <- fluidPage(       
   lang = "en",
   tags$script(src = "mapcontainer.js"),          
    
@@ -52,7 +51,7 @@ ui <- fluidPage(
     "))   
   ),
   
-  navBarUI("nav_bar"),  
+  navBarUI("nav_bar"),       
                                          
   tabsetPanel(
     id = "main_tabs",  

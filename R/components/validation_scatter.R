@@ -40,7 +40,10 @@ validationScatterServer <- function(id, dados_comparacao) {
         ggplot2::theme_minimal() +
         ggplot2::theme(
           legend.position = "bottom",
-          legend.markers = ggplot2::element_rect(size = 3) 
+        ) + 
+        ggplot2::guides(
+          color = ggplot2::guide_legend(override.aes = list(size = 4, alpha = 1)),
+          alpha = "none"
         )
     })
     output$validationScatter <- renderPlot({ plot_obj() }, res = 96)

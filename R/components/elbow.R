@@ -62,21 +62,12 @@ elbowPlotServer <- function(id, dados_cluster_definicoes, metodologia_selecionad
       base <- info_plot$dados_elbow
       num_cl <- info_plot$n_cluster
       
-      titulo_base <- "Aplicação do Método do Cotovelo"
-      subtitulo <- switch(metodologia_selecionada(),
-                          "Monthly" = paste("para o Mês de", mes_selecionado()),
-                          "Hourly" = paste("para a Hora", hora_selecionada()),
-                          "Monthly and Hourly" = paste("para", mes_selecionado(), "- Hora", hora_selecionada()),
-                          "" )
-      titulo_completo <- paste(titulo_base, subtitulo)
-      
       ggplot2::ggplot(data = base, ggplot2::aes(k.values, wss_values)) +
         ggplot2::geom_line(color = "black") +
         ggplot2::geom_point(size = 2, color = "black") +
         ggplot2::geom_point(data = base[num_cl, ], ggplot2::aes(k.values, wss_values), color = "#059669", size = 4) +
         ggplot2::geom_vline(xintercept = num_cl, linetype = "dashed", color = "#059669") +
         ggplot2::labs(
-          title = titulo_completo,
           x = "Number of Cluster (k)",
           y = "Within-Cluster Sum of Squares (WSS)"
         ) +

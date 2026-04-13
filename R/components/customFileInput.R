@@ -1,26 +1,30 @@
 customFileInputUI <- function(inputId, label, placeholder_text = "Click to select or drag and drop here", loaded_filename = NULL, ...) {
   
+  ns <- NS(NULL) # Garante compatibilidade se usado fora de módulos
+  
   tags$div(
     class = "upload-wrapper",
     
+    # Cabeçalho com Título e Ícones de Config/Info
     tags$div(
-      style = "display: flex; flex-direction: row; align-items: center; justify-content: space-between; cursor: pointer",
+      style = "display: flex; align-items: center; justify-content: space-between; margin-bottom: 5px;",
       tags$h5(label, class = "upload-title"),
       
       tags$div(
         class = "title-icons",
-        style = "color: #555; font-size: 1em; padding: 0 10px; gap: 10px; text-decoration: none; display: flex;align-items: center;", 
+        style = "display: flex; align-items: center; gap: 8px;",
         
         actionButton(
           inputId = paste0(inputId, "_config"),
           label = NULL,
-          icon = shiny::icon("gear"),
-          style = "color: #555; background-color: transparent; border: none; box-shadow: none; padding: 0;"
+          icon = icon("gear"),
+          style = "background: transparent; border: none; padding: 0; font-size: 0.9rem;"
         ),
         
         tags$span(
           id = paste0(inputId, "_info"),
-          shiny::icon("circle-info")
+          style = "cursor: help; color: var(--text-color-light);",
+          icon("circle-info")
         )
       )
     ),
@@ -28,28 +32,29 @@ customFileInputUI <- function(inputId, label, placeholder_text = "Click to selec
     if (!is.null(loaded_filename)) {
       tags$div(
         class = "file-input-wrapper loaded",
-        style = "background-color: #e8f5e9; border: 1px solid #16a34a;",
-        
-        shiny::icon("check-circle", style = "color: #f8fafc;"),
-        tags$span(loaded_filename, style = "color: #16a34a; font-weight: 500;")
+        icon("check"),
+        tags$span(class = "file-name-text", loaded_filename)
       )
-    } else {
+    } 
+    else {
       tags$label(
-        class = "file-input-wrapper",
+        class = "file-input-label",
         `for` = inputId, 
         
-        shiny::icon("arrow-up-from-bracket"),
+        icon("cloud-arrow-up"),
         tags$span(placeholder_text),
         
-        tags$div(style="display:none;", 
-                 fileInput(
-                   inputId = inputId, 
-                   label = NULL, 
-                   buttonLabel = NULL,
-                   placeholder = NULL,
-                   width = "100%",
-                   ...
-                 )
+        # Input real escondido
+        tags$div(
+          style = "display: none;",
+          fileInput(
+            inputId = inputId, 
+            label = NULL, 
+            buttonLabel = NULL,
+            placeholder = NULL,
+            width = "100%",
+            ...
+          )
         )
       )
     }
