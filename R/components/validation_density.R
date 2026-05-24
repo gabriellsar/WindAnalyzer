@@ -21,6 +21,8 @@ validationDensityServer <- function(id, dados_comparacao) {
       df <- dados_comparacao()
       req(df)
       
+      df$origin <- factor(df$origin, levels = c("Historical", "Estimated"))
+      
       ggplot2::ggplot(df, ggplot2::aes(x = power, color = origin, fill = origin)) +
         ggplot2::geom_density(linewidth = 1, alpha = 0.2) + 
         ggplot2::labs(

@@ -202,6 +202,7 @@ analysisServer <- function(id, lonlat_data, estacoes_data, dados_estacoes_data, 
         total_cenarios = 100
       )
       dados_combinados$estimado <- rowMeans(matriz_simulacao, na.rm = TRUE)
+      dados_combinados$cenario_1 <- matriz_simulacao[, 1]
       showNotification("Analysis completed!", type = "message")
       
       return(list(
@@ -299,7 +300,8 @@ analysisServer <- function(id, lonlat_data, estacoes_data, dados_estacoes_data, 
       
       return(dados_filtrados)
     })
-    dados_validacao <- reactive({
+    
+    dados_validacao_scatter <- reactive({
       res <- analysis_results(); req(res)
       df <- res$dados_originais
       
@@ -308,11 +310,21 @@ analysisServer <- function(id, lonlat_data, estacoes_data, dados_estacoes_data, 
       dplyr::bind_rows(hist, est)
     })
     
+    dados_validacao_density <- reactive({
+      res <- analysis_results(); req(res)
+      df <- res$dados_originais
+      
+      hist <- df %>% dplyr::select(speed, power) %>% dplyr::mutate(origin = "Historical")
+      est <- df %>% dplyr::select(speed) %>% dplyr::mutate(power = df$cenario_1, origin = "Estimated") # Usa o cenario_1 aqui
+      dplyr::bind_rows(hist, est)
+    })
+    
     scatterplotServer("scatterplot_module",dados_para_plotar = dados_filtrados_para_plot)
     densityPlotServer("density_module",dados_para_plotar = dados_filtrados_para_plot)
     elbowPlotServer("elbow_module", definicoes_reativo_elbow,reactive(analysis_results()$metodo_atual),reactive(input$mes_selecionado),reactive(input$hora_selecionada))
-    validationScatterServer("val_scatter_module", dados_validacao)
-    validationDensityServer("val_density_module", dados_validacao)
+    
+    validationScatterServer("val_scatter_module", dados_validacao_scatter)
+    validationDensityServer("val_density_module", dados_validacao_density)
     
     # Projeção Futura
     projection_raw <- eventReactive(input$run_projection, {
