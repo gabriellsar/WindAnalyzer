@@ -46,7 +46,7 @@ mapInputUI <- function(id) {
           ),
           
           dateRangeInput(ns("TamanhoSerie"), "Period:", start = "2021-01-01", end = "2025-12-30", min = "2000-01-01", max = "2030-12-30"),
-          selectInput(ns("tempo"), "Temporal Scale:", c("Hour", "Day", "Month", "Year")),
+          # selectInput(ns("tempo"), "Temporal Scale:", c("Hour", "Day", "Month", "Year")),
           
           tags$div(class = "form-group", numericInput(ns("rotor_height"), label = "Wind Turbine Rotor Height:",
                                                       value = 100,
@@ -179,7 +179,7 @@ mapInputServer <- function(id, lonlat_data, estacoes_data, dados_estacoes_data, 
         lon = input$lon,
         start_date = input$TamanhoSerie[1],
         end_date = input$TamanhoSerie[2],
-        time_scale = input$tempo,
+        time_scale = "Hour",
         rotor_height = input$rotor_height,
         use_correction = input$UsarCorrecao,
         correction_type = input$TipoCorrecao,

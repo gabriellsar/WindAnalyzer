@@ -34,10 +34,10 @@ guiaBannerServer <- function(id) {
     # Lógica de download do PDF
     output$download_guia <- downloadHandler(
       filename = function() {
-        "Guia_Usuario_WindAnalyzer.pdf" 
+        "WindAnalyzer_Guide.pdf" 
       },
       content = function(file) {
-        caminho_arquivo <- "www/Guia_Usuario_WindAnalyzer.pdf"
+        caminho_arquivo <- "www/WindAnalyzer_Guide.pdf"
         
         if(file.exists(caminho_arquivo)) {
           file.copy(caminho_arquivo, file)
