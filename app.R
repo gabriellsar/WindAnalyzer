@@ -14,7 +14,7 @@ tokens <- list(
   refresh = refresh_token,
   client_id = client_id,                        
   client_secret = client_secret 
-)              
+)                            
 
 lonlat <- as.data.frame(read_feather("lonlat_modificado.feather"))
 load("Base_estacoes.RData")
@@ -29,14 +29,14 @@ sapply(component_files, source)
 
 component_files <- list.files("R/utils", pattern = "\\.R$", full.names = TRUE)   
 sapply(component_files, source) 
-           
+              
 ui <- fluidPage(       
   lang = "en",
   tags$script(src = "mapcontainer.js"),          
    
   tags$head(    
     tags$meta(charset = "UTF-8"),
-    tags$meta(name = "viewport", content = "width=device-width, initial-scale=1.0"),
+    tags$meta(name = "viewport", content = "width=device-width, initial-scale=1.0"),         
     tags$title("WindAnalyzer - Wind Energy Analysis"),
     
     tags$link(rel = "stylesheet", type = "text/css", href = "main.css"), 

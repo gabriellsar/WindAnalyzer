@@ -11,6 +11,7 @@ analysisUI <- function(id) {
       ))),
       
       tags$div(class = "conteudo-caixa",
+        guiaBannerUI(ns("guia_onboarding_module")),
         uiOutput(ns("main_content")),
         tags$div(id = "windanalyzer_map_container", class = "map-transition-container", 
                 tags$div(class = "map-content-wrapper", mapInputUI(ns("map_input_module")))
@@ -69,22 +70,17 @@ analysisUI <- function(id) {
             tags$h4("Future Projection", 
                     style = "font-size: 0.9rem; color: var(--text-color-light); margin-bottom: 15px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;"),
             
-            # A classe flex-row-stretch garante que ambas as colunas tenham a mesma altura
             fluidRow(class = "flex-row-stretch",
                      column(4,
                             div(class = "side-panel-controls",
-                                # Módulo de Upload já customizado
                                 uiOutput(ns("projection_file_ui")),
                                 
                                 tags$hr(style = "margin: 15px 0 20px 0; border-color: var(--card-border-color);"),
                                 
-                                # Input Numérico Moderno
                                 div(class = "modern-input-group",
                                     tags$span("NUMBER OF SCENARIOS:", class = "control-label"),
                                     numericInput(ns("num_cenarios"), label = NULL, value = 100, min = 10, max = 1000, width = "100%")
                                 ),
-                                
-                                # Reutilizamos o botão gigante de CTA para dar destaque
                                 actionButton(ns("run_projection"), "Generate Projection", class = "btn-run-analysis", style = "margin-top: auto;", icon = icon("bolt"))
                             )
                      ),
@@ -101,6 +97,7 @@ analysisUI <- function(id) {
 analysisServer <- function(id, lonlat_data, estacoes_data, dados_estacoes_data, tokens) {
   moduleServer(id, function(input, output, session) {
     ns <- session$ns
+    guiaBannerServer("guia_onboarding_module");
     
     # 1. Gestão de Arquivos de Upload
     rv_files <- reactiveValues(

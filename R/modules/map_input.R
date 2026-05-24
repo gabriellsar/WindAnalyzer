@@ -26,7 +26,7 @@ mapInputUI <- function(id) {
           class = "input-fields",
           
           
-          tags$h4("Configuração do Parque Eólico"),
+          tags$h4("Wind Farm Configuration"),
           
           tags$div(class = "form-group latlon-group",
                    tags$div(class = "latlon-item",
@@ -67,7 +67,7 @@ mapInputUI <- function(id) {
         ),
         
         tags$div(class = "action-button-wrapper",
-                 actionButton(ns("generate_series"), "Generate Wind Speed TimeSeries", class = "btn-success", icon = icon("chart-line"))
+                 actionButton(ns("generate_series"), "Generate Wind Speed TimeSeries", class = "btn-run-analysis", icon = icon("chart-line"))
         )
       ),
       
@@ -107,7 +107,6 @@ mapInputServer <- function(id, lonlat_data, estacoes_data, dados_estacoes_data, 
       
       req(lat, lon)
       
-      # Validação para garantir que as coordenadas estão dentro do limite do Brasil definido no numericInput
       valid_lat <- lat >= -34.25 && lat <= 7.65
       valid_lon <- lon >= -75.95 && lon <= -33.40
       
