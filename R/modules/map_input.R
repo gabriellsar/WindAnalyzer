@@ -67,7 +67,7 @@ mapInputUI <- function(id) {
         ),
         
         tags$div(class = "action-button-wrapper",
-                 actionButton(ns("generate_series"), "Generate Wind Speed TimeSeries", class = "btn-run-analysis", icon = icon("chart-line"))
+                 actionButton(ns("generate_series"), "Generate TimeSeries", class = "btn-run-analysis", icon = icon("chart-line"))
         )
       ),
       
