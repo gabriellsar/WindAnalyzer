@@ -22,6 +22,10 @@ criar_modelos_kde <- function(dados, metodologia) {
 }
 
 simular_potencia_kde <- function(dados_para_simular, tabela_modelos_kde, tabela_definicoes_clusters, metodologia, total_cenarios) {
+  # Semente fixa: torna a simulacao de Monte Carlo reproduzivel entre execucoes. A
+  # variabilidade entre os total_cenarios de uma mesma execucao e preservada.
+  set.seed(42L)
+
   cols_join <- switch(metodologia,
                       "Single Period" = "cluster",
                       "Monthly" = c("Month", "cluster"),

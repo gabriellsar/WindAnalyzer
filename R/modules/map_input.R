@@ -128,7 +128,7 @@ mapInputServer <- function(id, lonlat_data, estacoes_data, dados_estacoes_data, 
     output$info_boxes <- renderUI({
       req(rv$merra_point, rv$inmet_station)
       
-      indice_inmet <- which(estacoes_data$VL_LONGITUDE == rv$inmet_station$lon & estacoes_data$VL_LATITUDE == rv$inmet_station$lat)[1]
+      indice_inmet <- rv$inmet_station$indice
       nome_estacao <- estacoes_data$DC_NOME[indice_inmet]
       
       dist_inmet_check <- if (rv$inmet_station$distance <= 40) {

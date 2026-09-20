@@ -18,8 +18,9 @@ find_nearest_neighbor <- function(target_lon, target_lat, candidate_points_df) {
   idx_min <- which.min(distances)
   
   return(list(
-    lon = candidate_points_df[[1]][idx_min], 
-    lat = candidate_points_df[[2]][idx_min], 
+    lon = candidate_points_df[[1]][idx_min],
+    lat = candidate_points_df[[2]][idx_min],
+    indice = idx_min,
     distance = distances[idx_min]
   ))
 }

@@ -28,8 +28,12 @@ aggregate_time_series_scale <- function(time_scale, input_series_df) {
 # Calcula o fator de correção de viés entre as séries INMET e MERRA-2.
 calculate_inmet_correction_factor <- function(comparison_df) {
 
-  comparison_df[comparison_df[, 3] <= 0 | comparison_df[, 3] > 25, 3] <- NA
-  comparison_df[comparison_df[, 2] <= 0 | comparison_df[, 2] > 25, 2] <- NA
+  # which() descarta os NA do indice: as series do INMET tem lacunas (mais da metade das
+  # leituras em algumas estacoes), e o indice logico direto erraria com
+  # "missing values are not allowed in subscripted assignments of data frames".
+  # As linhas ja NA seguem NA e sao removidas pelo na.omit abaixo.
+  comparison_df[which(comparison_df[, 3] <= 0 | comparison_df[, 3] > 25), 3] <- NA
+  comparison_df[which(comparison_df[, 2] <= 0 | comparison_df[, 2] > 25), 2] <- NA
   comparison_df <- na.omit(comparison_df)
   
   if (nrow(comparison_df) < 1) return(1)
@@ -71,7 +75,23 @@ perform_bias_correction <- function(correction_type, inmet_station_info, inmet_t
     merra2_full_data_for_inmet$MerraDate >= start_date_inmet & merra2_full_data_for_inmet$MerraDate <= end_date_inmet, 
     c("MerraDate", "merra2_speed_at_inmet_height")
   ]
-  comparison_period_df$INMET <- inmet_timeseries_data[1:nrow(comparison_period_df), (inmet_station_info$indice + 2)]
+  # As colunas 3..n de inmet_timeseries_data seguem a ordem das estacoes em Base_estacoes,
+  # e ambas as series sao horarias e alinhadas a partir de 2008-01-01. Sem uma estacao valida
+  # ou sem linhas suficientes, segue-se sem correcao em vez de propagar NA pela serie inteira.
+  indice_estacao <- inmet_station_info$indice
+  coluna_inmet <- if (is.null(indice_estacao)) NA_integer_ else as.integer(indice_estacao) + 2
+
+  serie_inmet_disponivel <- !is.na(coluna_inmet) &&
+    coluna_inmet >= 3 &&
+    coluna_inmet <= ncol(inmet_timeseries_data) &&
+    nrow(comparison_period_df) <= nrow(inmet_timeseries_data)
+
+  if (!serie_inmet_disponivel) {
+    warning("Serie do INMET indisponivel para a estacao selecionada; serie mantida sem correcao de vies.")
+    return(user_series_df$velocEXT)
+  }
+
+  comparison_period_df$INMET <- inmet_timeseries_data[1:nrow(comparison_period_df), coluna_inmet]
   comparison_period_df$Hour <- lubridate::hour(comparison_period_df$MerraDate)
   comparison_period_df$Month <- lubridate::month(comparison_period_df$MerraDate)
   
@@ -139,7 +159,8 @@ generate_wind_speed_series <- function(target_merra_lat, target_merra_lon, time_
     SpeedEXT = filtered_series_df$velocEXT, SpeedINMET = NA
   )
   
-  if (use_inmet_correction == "Yes") {
+  # O radioButtons de map_input.R entrega "yes"/"no"; a comparacao tolera caixa e NULL.
+  if (isTRUE(tolower(as.character(use_inmet_correction)) == "yes")) {
     corrected_series <- perform_bias_correction(
       correction_type, inmet_station_info, inmet_timeseries_data, 
       merra2_grid_points, filtered_series_df, tokens

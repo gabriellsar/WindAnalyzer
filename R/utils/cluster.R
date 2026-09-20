@@ -6,16 +6,21 @@ wss = function(k,aux){
 clusterizacao = function(temp){
   
   Vet_cluster = rep(NA, nrow(temp))
-  
-  wss_values  = rep(NA, 30)
-  wss_size  = rep(NA, 30)
-  for (k.values in 1:30) {
+
+  # O kmeans exige k menor que o numero de observacoes e que o de valores distintos.
+  # Sem esse teto, subgrupos pequenos (ex.: fevereiro numa estratificacao mes-hora com
+  # um ano de dados) abortam a analise inteira.
+  k_max = max(1, min(30, nrow(temp) - 1, length(unique(temp$speed)) - 1))
+
+  wss_values  = rep(NA, k_max)
+  wss_size  = rep(NA, k_max)
+  for (k.values in 1:k_max) {
     clt = wss(k.values,temp$speed)
     wss_values[k.values] = clt$tot.withinss
     wss_size[k.values] = min(clt$size)
   }
-  
-  k.values = 1:30
+
+  k.values = 1:k_max
   df = data.frame(k.values = k.values, wss_values = wss_values)
   df$perc = df$wss_values/df$wss_values[1]
   df$diference = NA
@@ -26,14 +31,21 @@ clusterizacao = function(temp){
   }
   
   n_cluster = which(df$diference < 0.001)[1]
-  
-  while(wss_size[n_cluster] < 4) {
+  if (is.na(n_cluster)) { n_cluster = k_max }
+
+  # A guarda em n_cluster > 1 evita o acesso a wss_size[0], que erra com
+  # "argument is of length zero".
+  while(n_cluster > 1 && wss_size[n_cluster] < 4) {
     n_cluster=n_cluster-1
   }
-  
+
   cl = kmeans(temp$speed, n_cluster,iter.max = 500)
-  while (min(cl$size) < 4) {
+  # Reinicios limitados: sem o teto, um subgrupo que nunca produz clusters com 4
+  # observacoes trava o processo R inteiro, e com ele todas as sessoes servidas por ele.
+  tentativas = 1
+  while (min(cl$size) < 4 && tentativas < 10) {
     cl = kmeans(temp$speed, n_cluster,iter.max = 500)
+    tentativas = tentativas + 1
   }
   Vet_cluster = cl$cluster
   Vet_speed = cl$centers
@@ -70,7 +82,11 @@ clusterizacao = function(temp){
 #'         2. `definicoes_clusters`: Uma tabela tidy com os detalhes de cada cluster.
 
 clusterizar_dados <- function(dados_EM, metodologia) {
-  
+
+  # Semente fixa: sem ela, os centroides iniciais do k-means mudam a cada execucao e a
+  # mesma base devolve numeros de clusters diferentes, impedindo auditoria dos resultados.
+  set.seed(42L)
+
   dados_EM$id_original <- 1:nrow(dados_EM)
   
   variaveis_agrupamento <- switch(metodologia,

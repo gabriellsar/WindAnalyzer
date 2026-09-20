@@ -25,10 +25,10 @@ combinar_dados_potencia_velocidade <- function(dados_potencia_brutos, dados_velo
   dados_velocidade_brutos$Velocidade <- to_numeric_safe(dados_velocidade_brutos$Velocidade)
  
   if(!lubridate::is.POSIXct(dados_potencia_brutos$Data) && !lubridate::is.Date(dados_potencia_brutos$Data)){
-    dados_potencia_brutos$Data <- as.Date(parse_date_time(dados_potencia_brutos$Data, orders = c("ymd", "dmy", "mdy")))
+    dados_potencia_brutos$Data <- as.Date(lubridate::parse_date_time(dados_potencia_brutos$Data, orders = c("ymd", "dmy", "mdy")))
   }
   if(!lubridate::is.POSIXct(dados_velocidade_brutos$Data) && !lubridate::is.Date(dados_velocidade_brutos$Data)){
-    dados_velocidade_brutos$Data <- as.Date(parse_date_time(dados_velocidade_brutos$Data, orders = c("ymd", "dmy", "mdy")))
+    dados_velocidade_brutos$Data <- as.Date(lubridate::parse_date_time(dados_velocidade_brutos$Data, orders = c("ymd", "dmy", "mdy")))
   }
   
   dados_potencia_brutos$Timestamp <- as.POSIXct(paste(dados_potencia_brutos$Data, dados_potencia_brutos$Hora, sep = " "),
