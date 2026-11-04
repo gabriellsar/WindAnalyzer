@@ -1,0 +1,61 @@
+cff-version: 1.2.0
+message: "If you use WindAnalyzer, please cite it using the metadata below and the two papers listed in references."
+title: "WindAnalyzer: a computational tool for nonparametric modeling and validation of wind energy data"
+type: software
+authors:
+  - given-names: Saulo Custodio
+    family-names: Ferreira
+    affiliation: "Pontifícia Universidade Católica do Rio de Janeiro (PUC-Rio)"
+  - given-names: Fernando Luiz
+    family-names: Cyrino Oliveira
+    affiliation: "Pontifícia Universidade Católica do Rio de Janeiro (PUC-Rio)"
+  - given-names: Paula
+    family-names: Maçaira
+    affiliation: "Pontifícia Universidade Católica do Rio de Janeiro (PUC-Rio)"
+  - given-names: Gabriel Lobo de Sant'Anna
+    family-names: Rosas
+    affiliation: "Pontifícia Universidade Católica do Rio de Janeiro (PUC-Rio)"
+  - given-names: Gustavo de Andrade
+    family-names: Melo
+    affiliation: "Pontifícia Universidade Católica do Rio de Janeiro (PUC-Rio)"
+repository-code: "https://github.com/gabriellsar/WindAnalyzer"
+url: "https://paulamacaira.shinyapps.io/WindAnalyzer/"
+keywords:
+  - wind energy
+  - MERRA-2
+  - reanalysis
+  - kernel density estimation
+  - k-means
+  - Monte Carlo
+  - R
+  - Shiny
+references:
+  - type: article
+    title: "Validation of the representativeness of wind speed time series obtained from reanalysis data for Brazilian territory"
+    authors:
+      - family-names: Ferreira
+        given-names: S. C.
+      - family-names: Cyrino Oliveira
+        given-names: F. L.
+      - family-names: Maçaira
+        given-names: P. M.
+    journal: Energy
+    volume: 258
+    start: 124746
+    year: 2022
+    doi: 10.1016/j.energy.2022.124746
+  - type: article
+    title: "Joint modeling of wind speed and power via a nonparametric approach"
+    authors:
+      - family-names: Ferreira
+        given-names: S. C.
+      - family-names: Maçaira
+        given-names: P. M.
+      - family-names: Cyrino Oliveira
+        given-names: F. L.
+    journal: Energies
+    volume: 17
+    issue: 14
+    start: 3573
+    year: 2024
+    doi: 10.3390/en17143573
