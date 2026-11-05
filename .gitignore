@@ -1,17 +1,13 @@
-# R / RStudio
 .Rproj.user/
 *.Rproj
 .Rhistory
 .RData
 .Ruserdata
 
-# Credenciais (nunca versionar) — ver .Renviron.example
 .Renviron
 config_token.R
 
-# Deploy (rsconnect / shinyapps.io)
 rsconnect/
 
-# Sistema operacional
 .DS_Store
 Thumbs.db

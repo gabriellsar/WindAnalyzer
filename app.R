@@ -1,7 +1,3 @@
-# WindAnalyzer — ponto de entrada da aplicacao Shiny.
-# Carrega dependencias, bases estaticas e os arquivos de R/ (utils -> components -> modules),
-# e monta a interface com tres abas: Home, Analysis e About.
-
 library(shiny)
 library(leaflet)
 library(shinyjs)
