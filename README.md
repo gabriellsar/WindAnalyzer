@@ -7,7 +7,7 @@
 [![Live app](https://img.shields.io/badge/live%20app-shinyapps.io-16a34a)](https://paulamacaira.shinyapps.io/WindAnalyzer/)
 ![R](https://img.shields.io/badge/R-4.5-276DC3?logo=r&logoColor=white)
 ![Shiny](https://img.shields.io/badge/Shiny-modules-1f6feb)
-![Status](https://img.shields.io/badge/INPI%20registration-in%20progress-lightgrey)
+![INPI](https://img.shields.io/badge/INPI-BR512026006513--5-16a34a)
 
 [**Open the app →**](https://paulamacaira.shinyapps.io/WindAnalyzer/)
 
