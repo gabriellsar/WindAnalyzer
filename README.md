@@ -135,6 +135,8 @@ DROPBOX_CLIENT_SECRET=...
 
 A legacy `config_token.R` (defining `refresh_token`, `client_id` and `client_secret`) is also accepted. Both files are git-ignored. Without credentials the app still starts and the upload-based workflow works; only map-based series generation is unavailable.
 
+**Basemap.** The map uses CARTO's Positron tiles, which require a free API key for non-commercial use ([request one here](https://carto.com/basemaps/apikey)). Add it to `.Renviron` as `CARTO_API_KEY=...`. Without a key, the map falls back to OpenStreetMap tiles.
+
 ### Input file formats
 
 All uploads are CSV files. The header, column separator (`;`, `,` or tab) and decimal mark (`.` or `,`) are set in the ⚙ dialog next to each upload field.
