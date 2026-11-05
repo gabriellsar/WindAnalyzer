@@ -4,7 +4,7 @@ heroSectionUI <- function(id) {
   tags$section(class = "hero",
                tags$div(class = "container",
                         tags$h1("WindAnalyzer"),
-                        tags$p("An Interative Tool for Wind Energy Reanalysis in Brazil"),
+                        tags$p("An Interactive Tool for Wind Energy Reanalysis in Brazil"),
                         actionButton(
                           inputId = ns("cta_button"),
                           class = "cta-button",
