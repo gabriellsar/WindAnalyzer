@@ -75,38 +75,6 @@ Given a future wind speed series and a number of scenarios, each observation is 
 
 ---
 
-## Architecture
-
-The app follows the **Shiny Modules** pattern: each functional block has its own UI/server pair and namespace. Reactive state lives in `reactiveValues`, and the heavy pipeline (clustering → KDE → Monte Carlo) only runs on an explicit `eventReactive` trigger, with intermediate results cached for all downstream charts.
-
-```
-WindAnalyzer/
-├── app.R                    # entry point: loads data, sources R/, builds the UI and server
-├── R/
-│   ├── modules/             # pages and features (Shiny modules)
-│   │   ├── nav_bar.R  hero.R  cards_sect.R  about.R
-│   │   ├── map_input.R      # Leaflet map, MERRA-2 / INMET lookup, series generation
-│   │   └── analysis.R       # upload → modeling → validation → projection
-│   ├── components/          # reusable UI pieces (charts, custom file input, guide banner)
-│   └── utils/               # algorithms and data access
-│       ├── cluster.R        # K-means + automatic K (elbow)
-│       ├── kde.R            # KDE models, Monte Carlo sampling, cluster lookup
-│       ├── map_tseries_utils.R        # MERRA-2 series, extrapolation, bias correction
-│       ├── map_interpolation_utils.R  # nearest-neighbor (great-circle distance)
-│       ├── time_series.R    # pairing of speed and power series
-│       ├── setup_file_observer.R      # CSV reading with user-defined options
-│       └── dropbox_utils.R  # credentials, OAuth 2.0 token refresh, remote .feather download
-├── data/                    # static datasets loaded at startup
-│   ├── lonlat_modificado.feather   # MERRA-2 grid coordinates
-│   ├── MerraDate.feather           # MERRA-2 hourly time index (2000-01 → 2023-11)
-│   ├── Base_estacoes.RData         # INMET station inventory
-│   └── Base_Dados_Estacoes.RData   # INMET hourly wind series
-├── www/                     # CSS, JS, images and the user guide (PDF)
-├── docs/images/             # screenshots used in this README
-├── renv.lock                # pinned package versions
-└── .Renviron.example        # template for the Dropbox credentials
-```
-
 ### Data layer: remote access to MERRA-2
 
 Loading the full MERRA-2 grid for Brazil into memory is not feasible. The reanalysis was pre-processed and split into **one Apache Feather file per grid point** (U/V wind components at 10 m and 50 m, plus DISPH), stored in the cloud. At runtime the app authenticates through **OAuth 2.0 with automatic token refresh** and downloads only the file for the requested grid point. The small auxiliary datasets (grid coordinates and INMET inventory) stay in memory for the whole session.
