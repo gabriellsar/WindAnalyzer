@@ -84,6 +84,25 @@ mapInputUI <- function(id) {
   )
 }
 
+# Mapa base. Desde 25/09/2026 o CARTO so serve tiles com chave de API (gratuita para uso
+# academico: https://carto.com/basemaps/apikey). Com CARTO_API_KEY no .Renviron usa o
+# Positron do CARTO; sem a chave, cai para o OpenStreetMap em vez de exibir o aviso
+# "API KEY REQUIRED" no lugar do mapa.
+add_basemap <- function(map) {
+  carto_key <- Sys.getenv("CARTO_API_KEY")
+
+  if (nzchar(carto_key)) {
+    addTiles(
+      map,
+      urlTemplate = paste0("https://basemaps.cartocdn.com/rastertiles/light_all/{z}/{x}/{y}.png?key=", carto_key),
+      attribution = '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
+      options = tileOptions(minZoom = 3, maxZoom = 5)
+    )
+  } else {
+    addProviderTiles(map, providers$OpenStreetMap.Mapnik, options = providerTileOptions(minZoom = 3, maxZoom = 5))
+  }
+}
+
 mapInputServer <- function(id, lonlat_data, estacoes_data, dados_estacoes_data, tokens) {
   moduleServer(id, function(input, output, session) {
     
@@ -94,7 +113,7 @@ mapInputServer <- function(id, lonlat_data, estacoes_data, dados_estacoes_data, 
     
     output$map <- renderLeaflet({
       leaflet() %>%
-        addProviderTiles(providers$CartoDB.Positron, options = providerTileOptions(minZoom = 3, maxZoom = 5)) %>%
+        add_basemap() %>%
         addAwesomeMarkers(lng = -55.25, lat = -15.25, label = "Wind Farm/Turbine", icon = awesomeIcons(icon = 'location-crosshairs', library = 'fa', markerColor = 'darkred')) %>%
         addAwesomeMarkers(lng = rv$merra_point$lon, lat = rv$merra_point$lat, label = "MERRA-2 Point", icon = awesomeIcons(icon = 'cloud', library = 'fa', markerColor = 'blue')) %>%
         addAwesomeMarkers(lng = rv$inmet_station$lon, lat = rv$inmet_station$lat, label = "INMET station", icon = awesomeIcons(icon = 'tower-broadcast', library = 'fa', markerColor = 'green')) %>%

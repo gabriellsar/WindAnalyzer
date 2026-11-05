@@ -1,21 +1,35 @@
 <<<<<<< HEAD
+<<<<<<< HEAD
 .Rproj.user
 =======
 .Rproj.user/
 >>>>>>> 99745826eb846dbf238e6de7753fcf9af0e15030
+=======
+.Rproj.user/
+>>>>>>> 97f91d037ee3f57bf4668a5846599aabd1d44f60
 *.Rproj
 .Rhistory
 .RData
 .Ruserdata
+<<<<<<< HEAD
 <<<<<<< HEAD
 config_token.R
 =======
 
 .Renviron
 config_token.R
+=======
+
+.Renviron
+config_token.R
+>>>>>>> 97f91d037ee3f57bf4668a5846599aabd1d44f60
 
 rsconnect/
 
 .DS_Store
+<<<<<<< HEAD
 Thumbs.db
 >>>>>>> 99745826eb846dbf238e6de7753fcf9af0e15030
+=======
+Thumbs.db
+>>>>>>> 97f91d037ee3f57bf4668a5846599aabd1d44f60
