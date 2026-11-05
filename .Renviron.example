@@ -1,10 +1,3 @@
-<<<<<<< HEAD
-# Copie este arquivo para .Renviron (na raiz do projeto) e preencha com as credenciais
-# do app Dropbox que hospeda os pontos de grade do MERRA-2. O .Renviron esta no .gitignore.
-DROPBOX_REFRESH_TOKEN=
-DROPBOX_CLIENT_ID=
-DROPBOX_CLIENT_SECRET=
-=======
 # Copie este arquivo para .Renviron (na raiz do projeto) e preencha. O .Renviron esta no .gitignore.
 
 # Credenciais do app Dropbox que hospeda os pontos de grade do MERRA-2.
@@ -15,4 +8,3 @@ DROPBOX_CLIENT_SECRET=
 # Chave do CARTO para o mapa base (gratuita para uso academico: https://carto.com/basemaps/apikey).
 # Sem ela, o mapa usa o OpenStreetMap.
 CARTO_API_KEY=
->>>>>>> 97f91d037ee3f57bf4668a5846599aabd1d44f60
