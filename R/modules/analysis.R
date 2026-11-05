@@ -7,7 +7,7 @@ analysisUI <- function(id) {
       
       fluidRow(column(12, tags$div(class = "header-caixa",
               tags$h3(class = "header-title", "WindAnalyzer"),
-              tags$h3(class = "header-subtitle", "- An Interative Tool for Wind Energy Reanalysis in Brazil")
+              tags$h3(class = "header-subtitle", "- An Interactive Tool for Wind Energy Reanalysis in Brazil")
       ))),
       
       tags$div(class = "conteudo-caixa",

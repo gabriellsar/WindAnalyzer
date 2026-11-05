@@ -59,7 +59,7 @@ perform_bias_correction <- function(correction_type, inmet_station_info, inmet_t
     tokens$refresh, tokens$client_id, tokens$client_secret
   )
   
-  merra2_time_index <- arrow::read_feather("MerraDate.feather")
+  merra2_time_index <- arrow::read_feather(file.path("data", "MerraDate.feather"))
   merra2_full_data_for_inmet <- cbind(merra2_time_index, merra2_raw_data_for_inmet)
   
   merra2_full_data_for_inmet$speed_50m <- sqrt(merra2_full_data_for_inmet$U50M^2 + merra2_full_data_for_inmet$V50M^2)
@@ -138,7 +138,7 @@ generate_wind_speed_series <- function(target_merra_lat, target_merra_lon, time_
     tokens$refresh, tokens$client_id, tokens$client_secret
   )
   
-  merra2_time_index <- arrow::read_feather("MerraDate.feather")
+  merra2_time_index <- arrow::read_feather(file.path("data", "MerraDate.feather"))
   merra2_full_data <- cbind(merra2_time_index, merra2_raw_data)
   
   merra2_full_data$speed_50m <- sqrt(merra2_full_data$U50M^2 + merra2_full_data$V50M^2)

@@ -1,6 +1,21 @@
+<<<<<<< HEAD
 .Rproj.user
+=======
+.Rproj.user/
+>>>>>>> 99745826eb846dbf238e6de7753fcf9af0e15030
 *.Rproj
 .Rhistory
 .RData
 .Ruserdata
+<<<<<<< HEAD
 config_token.R
+=======
+
+.Renviron
+config_token.R
+
+rsconnect/
+
+.DS_Store
+Thumbs.db
+>>>>>>> 99745826eb846dbf238e6de7753fcf9af0e15030
